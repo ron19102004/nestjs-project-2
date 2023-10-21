@@ -12,6 +12,8 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthsGuard } from './auths.guard';
 import { ResponseCustomModule } from 'src/helpers/response.help';
+import { RolesGuard } from 'src/middlewares/role.middleware';
+import { Public } from './decorators/public.decorator';
 
 @ApiTags('auths')
 @Controller('auths')
@@ -22,6 +24,8 @@ export class AuthsController {
     return await this.authsService.signIn(signInDto);
   }
   @ApiBearerAuth()
+  @Public()
+  @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @Get('/profile')
   getProfile(@Request() req) {
