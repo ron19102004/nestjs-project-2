@@ -11,6 +11,7 @@ import { IResObj, ResponseCustomModule } from 'src/helpers/response.help';
 import { AuthsPayloads } from './gateways/auths-payload.gateway';
 import { Admin } from 'src/modules';
 import { ConfigService } from '@nestjs/config';
+import { MailService } from 'src/utils/mail/mail.service';
 
 @Injectable()
 export class AuthsService {
@@ -18,6 +19,7 @@ export class AuthsService {
     private jwtService: JwtService,
     private userService: UserService,
     private configService: ConfigService,
+    private mailService: MailService,
   ) {}
   async signIn(signInDto: SignInDto) {
     const signInStrategy: SignInStrategy =
@@ -45,6 +47,7 @@ export class AuthsService {
       user.refresh_token = refresh_token;
       await this.userService.save(user);
     } else refresh_token = user.refresh_token;
+    await this.mailService.sendUserConfirmation(user);
     return ResponseCustomModule.ok(
       {
         access_token: access_token,

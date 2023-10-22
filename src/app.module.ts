@@ -6,6 +6,7 @@ import { DepartmentModule } from './modules/department/department.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthsModule } from './auths/auths.module';
+import { MailModule } from './utils/mail/mail.module';
 import configs_custom from './configs/environment.config';
 import typeormModuleOptionsCustom from './configs/database.config';
 @Module({
@@ -20,6 +21,7 @@ import typeormModuleOptionsCustom from './configs/database.config';
     FeedbackModule,
     UserModule,
     AuthsModule,
+    MailModule,
   ],
   controllers: [],
   providers: [],

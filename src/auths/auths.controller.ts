@@ -12,7 +12,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthsGuard } from './auths.guard';
 import { ResponseCustomModule } from 'src/helpers/response.help';
-import { RolesGuard } from 'src/middlewares/role.middleware';
+import { RolesGuard } from 'src/guards/role.guard';
 import { Public } from './decorators/public.decorator';
 
 @ApiTags('auths')
