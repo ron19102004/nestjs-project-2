@@ -49,4 +49,16 @@ export class Admin extends User {
     this.department = department;
     this.branch = branch;
   }
+  signature() {
+    return `\n🚩Chử ký🚩
+Tên người gửi: ${this.firstName} ${this.lastName}
+Email: ${this.email}
+Số điện thoại: ${this.phoneNumber}
+Địa chỉ: ${this.address}
+Thời gian gửi: ${new Date()}
+`;
+  }
+  adminToString() {
+    return ``;
+  }
 }

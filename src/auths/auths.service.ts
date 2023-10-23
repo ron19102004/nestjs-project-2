@@ -11,7 +11,7 @@ import { IResObj, ResponseCustomModule } from 'src/helpers/response.help';
 import { AuthsPayloads } from './gateways/auths-payload.gateway';
 import { Admin } from 'src/modules';
 import { ConfigService } from '@nestjs/config';
-import { MailService } from 'src/utils/mail/mail.service';
+import { TelebotService } from 'src/modules/telebot/telebot.service';
 
 @Injectable()
 export class AuthsService {
@@ -19,7 +19,7 @@ export class AuthsService {
     private jwtService: JwtService,
     private userService: UserService,
     private configService: ConfigService,
-    private mailService: MailService,
+    private telebotService: TelebotService,
   ) {}
   async signIn(signInDto: SignInDto) {
     const signInStrategy: SignInStrategy =
@@ -30,6 +30,15 @@ export class AuthsService {
     );
     if (!login.success) return login;
     const user: Admin = login.data as Admin;
+    if (user.teleID && user.teleID.length > 0) {
+      const tele_id: number = parseInt(user.teleID);
+      this.telebotService
+        .getTelebotGateway()
+        .sendMessage({
+          id: tele_id,
+          message: `🔔Thông báo🔔\n⚠️Tài khoản của bạn vừa được đăng nhập vào lúc ${new Date()}`,
+        });
+    }
     const jwtConfigs = this.configService.get<{
       ACCESS_TOKEN_SECRET: string;
       REFRESH_TOKEN_SECRET: string;
@@ -47,7 +56,6 @@ export class AuthsService {
       user.refresh_token = refresh_token;
       await this.userService.save(user);
     } else refresh_token = user.refresh_token;
-    await this.mailService.sendUserConfirmation(user);
     return ResponseCustomModule.ok(
       {
         access_token: access_token,

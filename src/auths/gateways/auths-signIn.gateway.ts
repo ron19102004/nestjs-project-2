@@ -18,14 +18,18 @@ export class SignInByEmailStrategy extends SignInStrategy {
   async login(
     signInDto: SignInDto,
     userService: UserService,
-  ): Promise<IResObj<Admin>> {    
+  ): Promise<IResObj<Admin>> {
     if (!ValidatorCustomModule.isEmail(signInDto.data_login_first.trim()))
       return ResponseCustomModule.error('Email is not valid', 400);
     const user: Admin = await userService.findByEmail(
       signInDto.data_login_first.trim(),
     );
     if (!user) return ResponseCustomModule.error('User Not Found', 404);
-    if (!HashCustomeModule.compare(signInDto.data_login_first, user.password))
+    const checkPass: boolean = await HashCustomeModule.compare(
+      signInDto.data_login_first,
+      user.password,
+    );
+    if (!checkPass)
       return ResponseCustomModule.error('Password is not valid', 400);
     return ResponseCustomModule.ok(user, 'Login successful');
   }
@@ -41,7 +45,11 @@ export class SignInByPhoneNumberStrategy extends SignInStrategy {
       signInDto.data_login_first.trim(),
     );
     if (!user) return ResponseCustomModule.error('User Not Found', 404);
-    if (!HashCustomeModule.compare(signInDto.data_login_first, user.password))
+    const checkPass: boolean = await HashCustomeModule.compare(
+      signInDto.data_login_first,
+      user.password,
+    );
+    if (!checkPass)
       return ResponseCustomModule.error('Password is not valid', 400);
     return ResponseCustomModule.ok(user, 'Login successful');
   }
@@ -54,6 +62,4 @@ export enum LOGIN_METHOD {
 const SignInStrategys: Record<string, SignInStrategy> = {};
 SignInStrategys[LOGIN_METHOD.phone] = new SignInByPhoneNumberStrategy();
 SignInStrategys[LOGIN_METHOD.email] = new SignInByEmailStrategy();
-export {
-  SignInStrategys,
-}
+export { SignInStrategys };

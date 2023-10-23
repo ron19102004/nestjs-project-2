@@ -10,7 +10,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(Admin) private repository: Repository<Admin>) {}
+  constructor(
+    @InjectRepository(Admin) private repository: Repository<Admin>,
+  ) {}
   async createUser(userDto: IUserDto<CreateUserDto>) {
     const userByEmail: Admin = await this.findByEmail(userDto.entity().email);
     if (userByEmail)
@@ -44,6 +46,15 @@ export class UserService {
       .leftJoinAndSelect('users.branch', 'branch')
       .leftJoinAndSelect('users.department', 'department')
       .where('users.phoneNumber=:phoneNumber', { phoneNumber: phoneNumber })
+      .andWhere('users.deleted=:deleted', { deleted: false })
+      .getOne();
+  }
+  async findByTeleID(teleID: string): Promise<Admin> {
+    return await this.repository
+      .createQueryBuilder('users')
+      .leftJoinAndSelect('users.branch', 'branch')
+      .leftJoinAndSelect('users.department', 'department')
+      .where('users.teleID=:teleID', { teleID: teleID })
       .andWhere('users.deleted=:deleted', { deleted: false })
       .getOne();
   }

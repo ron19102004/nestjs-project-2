@@ -65,7 +65,7 @@ export class User extends EntityBase {
     type: 'text',
     nullable: true,
   })
-  public avatar: string;  
+  public avatar: string;
   @Column({
     name: 'sex',
     enum: Sex,
@@ -78,6 +78,13 @@ export class User extends EntityBase {
     nullable: false,
   })
   public age: number;
+  @Column({
+    name: 'teleID',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  public teleID: string;
   initUser(
     email: string,
     phoneNumber: string,
@@ -96,5 +103,13 @@ export class User extends EntityBase {
     this.sex = sex;
     this.age = age;
     this.password = password;
+  }
+  userToString() {
+    return `💁Tên người dùng: ${this.firstName} ${this.lastName}
+📧Email: ${this.email}
+➕Địa chỉ: ${this.address}
+☎️Số điện thoại: ${this.phoneNumber}
+🪪Vai trò: ${this.role}
+⚧️Giới tính: ${this.sex}`;
   }
 }
