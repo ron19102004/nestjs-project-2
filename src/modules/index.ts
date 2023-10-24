@@ -7,6 +7,7 @@ import { Department } from './department/entities/department.entity';
 import { Admin } from 'src/modules/user/entities/admin.entity';
 import { Branch } from './branch/entities/branch.entity';
 import { Telebot } from './telebot/entities/telebot.entity';
+import { Message } from './message/entities/message.entity';
 export {
     BranchModule,
     DepartmentModule,
@@ -16,5 +17,6 @@ export {
     Branch,
     Admin,
     Department,
-    Telebot
+    Telebot,
+    Message
 }

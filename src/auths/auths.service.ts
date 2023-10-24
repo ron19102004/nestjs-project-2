@@ -32,12 +32,11 @@ export class AuthsService {
     const user: Admin = login.data as Admin;
     if (user.teleID && user.teleID.length > 0) {
       const tele_id: number = parseInt(user.teleID);
-      this.telebotService
-        .getTelebotGateway()
-        .sendMessage({
-          id: tele_id,
-          message: `🔔Thông báo🔔\n⚠️Tài khoản của bạn vừa được đăng nhập vào lúc ${new Date()}`,
-        });
+      this.telebotService.getTelebotGateway().sendMessage({
+        id: tele_id,
+        message: `🔔Thông báo🔔\n⚠️Tài khoản của bạn vừa được đăng nhập vào lúc ${new Date()}`,
+        userReceive: user,
+      });
     }
     const jwtConfigs = this.configService.get<{
       ACCESS_TOKEN_SECRET: string;

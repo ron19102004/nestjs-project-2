@@ -2,16 +2,16 @@
 import * as bcrypt from 'bcrypt';
 interface IHashModule {
   password(pwd: string): Promise<string>;
-  compare(password: string, hashCode: string): Promise<boolean>;
+  compare(password: string, hashCode: string): boolean;
 }
 class HashModule implements IHashModule {
   constructor() {}
-  compare = async (password: string, hashCode: string): Promise<boolean> => {
-    return await bcrypt.compare(password, hashCode);
+  compare = (password: string, hashCode: string): boolean => {    
+    return bcrypt.compareSync(password, hashCode);
   };
   password = async (pwd: string): Promise<string> => {
     const salt = await bcrypt.genSalt();
     return await bcrypt.hash(pwd, salt);
   };
 }
-export const HashCustomeModule:IHashModule = new HashModule();
+export const HashCustomeModule: IHashModule = new HashModule();

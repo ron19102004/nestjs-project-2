@@ -5,11 +5,17 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Telebot } from './entities/telebot.entity';
 import { UserModule } from '../user/user.module';
+import { MessageModule } from '../message/message.module';
 
 @Module({
   controllers: [TelebotController],
   providers: [TelebotService],
-  imports: [ConfigModule, UserModule, TypeOrmModule.forFeature([Telebot])],
+  imports: [
+    ConfigModule,
+    UserModule,
+    MessageModule,
+    TypeOrmModule.forFeature([Telebot]),
+  ],
   exports: [TelebotService],
 })
 export class TelebotModule {}

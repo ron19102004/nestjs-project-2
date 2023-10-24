@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { Branch, Department } from 'src/modules';
+import { Message } from 'src/modules/message/entities/message.entity';
 
 @Entity({ name: 'users' })
 export class Admin extends User {
@@ -34,6 +35,8 @@ export class Admin extends User {
   public branch: Branch;
   @ManyToOne(() => Department, (d: Department) => d.admin)
   public department: Department;
+  @OneToMany(() => Message, (m: Message) => m.admin)
+  public messages: Message;
   updateAdmin(
     branch: Branch,
     department: Department,

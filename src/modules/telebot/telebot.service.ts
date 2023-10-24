@@ -10,15 +10,22 @@ import { UserService } from '../user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { Admin } from '../user/entities/admin.entity';
 import { ResponseCustomModule } from 'src/helpers/response.help';
+import { MessageService } from '../message/message.service';
 @Injectable()
 export class TelebotService {
   private telebotGateway: TeleBotGateWay;
   constructor(
     private configService: ConfigService,
     private userService: UserService,
+    private messageService: MessageService,
     @InjectRepository(Telebot) private repository: Repository<Telebot>,
   ) {
-    this.telebotGateway = new TeleBotGateWay(this, configService, userService);
+    this.telebotGateway = new TeleBotGateWay(
+      this,
+      configService,
+      userService,
+      messageService,
+    );
   }
   public getTelebotGateway(): TeleBotGateWay {
     return this.telebotGateway;
@@ -86,11 +93,10 @@ export class TelebotService {
       createMessageDto.phoneNumber,
     );
     if (!userReceive) return ResponseCustomModule.error('User not found', 404);
-    if (!userReceive.teleID || userReceive.teleID.length === 0)
-      return ResponseCustomModule.error('User have not sign in yet', 408);
     await this.telebotGateway.sendMessage({
       id: parseInt(userReceive.teleID),
       message: `📢Thông báo🔔\n📩Tin nhắn đến bạn: ${createMessageDto.message}${signature}`,
+      userReceive: userReceive,
     });
     return ResponseCustomModule.ok(null, 'Sent');
   }

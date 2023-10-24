@@ -25,11 +25,7 @@ export class SignInByEmailStrategy extends SignInStrategy {
       signInDto.data_login_first.trim(),
     );
     if (!user) return ResponseCustomModule.error('User Not Found', 404);
-    const checkPass: boolean = await HashCustomeModule.compare(
-      signInDto.data_login_first,
-      user.password,
-    );
-    if (!checkPass)
+    if (!HashCustomeModule.compare(signInDto.password, user.password))
       return ResponseCustomModule.error('Password is not valid', 400);
     return ResponseCustomModule.ok(user, 'Login successful');
   }
@@ -45,11 +41,7 @@ export class SignInByPhoneNumberStrategy extends SignInStrategy {
       signInDto.data_login_first.trim(),
     );
     if (!user) return ResponseCustomModule.error('User Not Found', 404);
-    const checkPass: boolean = await HashCustomeModule.compare(
-      signInDto.data_login_first,
-      user.password,
-    );
-    if (!checkPass)
+    if (!HashCustomeModule.compare(signInDto.password, user.password))
       return ResponseCustomModule.error('Password is not valid', 400);
     return ResponseCustomModule.ok(user, 'Login successful');
   }
