@@ -130,7 +130,7 @@ export class TeleBotGateWay {
       default: {
         await this.bot.sendMessage(
           tele_user_id,
-          'Câu lệnh của bạn không hợp lệ',
+          '⚠️Câu lệnh của bạn không hợp lệ',
         );
       }
     }
@@ -178,21 +178,22 @@ export class HandleActionTeleBot {
     if (userT) {
       this.bot.sendMessage(
         tele_user_id,
-        'Tài khoản này đã được đăng nhập ở thiết bị khác.\nBây giờ sẽ được đăng nhập tại thiết bị này và đăng xuất ở thiết bị đó.',
+        '⚠️Thiết bị này đã đăng nhập vào một tài khoản khác.Hãy nhập lệnh /logout để đăng xuất trước khi đăng nhập tài khoản mới',
       );
+      return;
     }
     const account: string[] = mess.split(' ');
     if (account.length < 2) {
       this.bot.sendMessage(
         tele_user_id,
-        `Vui lòng nhập mật khẩu. Thực hiện lại cú pháp: /login sodienthoai matkhau`,
+        `⚠️Vui lòng nhập mật khẩu. Thực hiện lại cú pháp: /login sodienthoai matkhau`,
       );
       return;
     }
     if (!ValidatorCustomModule.isPhoneNumber(account[0])) {
       this.bot.sendMessage(
         tele_user_id,
-        'Số điện thoại không hợp lệ. Vui lòng nhập đúng cú pháp: /login sodienthoai matkhau',
+        '⚠️Số điện thoại không hợp lệ. Vui lòng nhập đúng cú pháp: /login sodienthoai matkhau',
       );
       return;
     }
@@ -200,22 +201,29 @@ export class HandleActionTeleBot {
     if (!user) {
       this.bot.sendMessage(
         tele_user_id,
-        `Số điện thoại ${mess} chưa có trong hồ sơ của bênh viện.`,
+        `⚠️Số điện thoại ${mess} chưa có trong hồ sơ của bênh viện.`,
       );
       return;
     }
     if (!HashCustomeModule.compare(account[1], user.password)) {
       this.bot.sendMessage(
         tele_user_id,
-        `‼️ Mật khẩu không chính xác. Vui lòng đăng nhập lại`,
+        `⚠️Mật khẩu không chính xác. Vui lòng đăng nhập lại`,
       );
       return;
+    }
+    if (user.teleID && user.teleID.length > 0) {
+      const teleID_old = parseInt(user.teleID);
+      this.bot.sendMessage(
+        teleID_old,
+        `⚠️Tài khoản đã đăng nhập vào thiết bị khác đăng xuất khỏi thiết bị của bạn vào lúc ${new Date()}.`,
+      );
     }
     user.teleID = `${tele_user_id}`;
     await this.userService.save(user);
     this.bot.sendMessage(
       tele_user_id,
-      `Chào mừng ${user.firstName} ${user.lastName} đến với bot của bệnh viện TD.`,
+      `✅Đăng nhập thành công.\n🫴Chào mừng ${user.firstName} ${user.lastName}.`,
     );
     await this.callBackMessage(user);
   }
@@ -224,7 +232,7 @@ export class HandleActionTeleBot {
     if (!user) {
       this.bot.sendMessage(
         tele_user_id,
-        `Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
+        `⚠️Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
       );
     } else {
       this.bot.sendMessage(tele_user_id, user.userToString());
@@ -235,12 +243,12 @@ export class HandleActionTeleBot {
     if (!user) {
       this.bot.sendMessage(
         tele_user_id,
-        `Tài khoản này đã đăng xuất. Vui lòng đăng nhập hệ thống bệnh viện`,
+        `📤Tài khoản này đã đăng xuất.\nVui lòng đăng nhập hệ thống bệnh viện`,
       );
     } else {
       user.teleID = '';
       await this.userService.save(user);
-      this.bot.sendMessage(tele_user_id, 'Đăng xuất thành công.');
+      this.bot.sendMessage(tele_user_id, '✅Đăng xuất thành công📤');
     }
   }
   public async addTelebot(tele_user_id: number, mess: string) {
@@ -248,21 +256,21 @@ export class HandleActionTeleBot {
     if (!userT) {
       this.bot.sendMessage(
         tele_user_id,
-        `Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
+        `⚠️Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
       );
       return;
     }
     if (!(userT.role === Role.admin || userT.role === Role.master)) {
       this.bot.sendMessage(
         tele_user_id,
-        `Tài khoản này không có quyền sử dụng lệnh này.`,
+        `⚠️Tài khoản này không có quyền sử dụng lệnh này.`,
       );
       return;
     }
     if (mess.charAt(0) !== '{' || mess.charAt(mess.length - 1) !== '}') {
       await this.bot.sendMessage(
         tele_user_id,
-        `Lỗi định dạng. Để thêm telebot phải đúng định dạng như sau: {title,acronym,content,image}`,
+        `⚠️Lỗi định dạng. Để thêm telebot phải đúng định dạng như sau: {title,acronym,content,image}`,
       );
       return;
     }
@@ -270,7 +278,7 @@ export class HandleActionTeleBot {
     if (value.length !== 4) {
       await this.bot.sendMessage(
         tele_user_id,
-        `Lỗi nhập liệu. Phải đầy đủ title,acronym,content trong {title,acronym,content,image}.\nNếu không có image thì dữ liệu sẽ có dạng {title,acronym,content,}`,
+        `⚠️Lỗi nhập liệu. Phải đầy đủ title,acronym,content trong {title,acronym,content,image}.\nNếu không có image thì dữ liệu sẽ có dạng {title,acronym,content,}`,
       );
       return;
     }
@@ -278,7 +286,7 @@ export class HandleActionTeleBot {
     if (!(value[0] && value[1] && value[2])) {
       await this.bot.sendMessage(
         tele_user_id,
-        `Lỗi nhập liệu. Phải đầy đủ title,acronym,content trong {title,acronym,content,image}`,
+        `⚠️Lỗi nhập liệu. Phải đầy đủ title,acronym,content trong {title,acronym,content,image}`,
       );
       return;
     }
@@ -289,7 +297,7 @@ export class HandleActionTeleBot {
     ) {
       await this.bot.sendMessage(
         tele_user_id,
-        `Lỗi định dạng.Thuộc tính image trong {title,acronym,content,image} không hợp lệ`,
+        `⚠️Lỗi định dạng.Thuộc tính image trong {title,acronym,content,image} không hợp lệ`,
       );
       return;
     }
@@ -302,7 +310,7 @@ export class HandleActionTeleBot {
       await this.teleBotService.create(createTeleBotDto);
     await this.bot.sendMessage(
       tele_user_id,
-      `Đã tạo thành công một trường.\n${teleBotNew.toString()}`,
+      `✅Đã tạo thành công một trường.\n${teleBotNew.toString()}`,
     );
   }
   public async getTeleBots(tele_user_id: number) {
@@ -310,14 +318,14 @@ export class HandleActionTeleBot {
     if (!userT) {
       this.bot.sendMessage(
         tele_user_id,
-        `Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
+        `⚠️Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
       );
       return;
     }
     if (!(userT.role === Role.admin || userT.role === Role.master)) {
       this.bot.sendMessage(
         tele_user_id,
-        `Tài khoản này không có quyền sử dụng lệnh này.`,
+        `⚠️Tài khoản này không có quyền sử dụng lệnh này.`,
       );
       return;
     }
