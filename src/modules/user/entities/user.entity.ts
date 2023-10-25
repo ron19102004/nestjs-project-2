@@ -63,7 +63,7 @@ export class User extends EntityBase {
   @Column({
     name: 'avatar',
     type: 'text',
-    nullable: true,
+    default: 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png',
   })
   public avatar: string;
   @Column({

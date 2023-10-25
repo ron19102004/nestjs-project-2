@@ -24,17 +24,20 @@ export class AuthsService {
   async signIn(signInDto: SignInDto) {
     const signInStrategy: SignInStrategy =
       SignInStrategys[signInDto.login_method];
-    const login: IResObj<Admin> = await signInStrategy.login(
-      signInDto,
-      this.userService,
-    );
+    const login: IResObj<{ user: Admin; deviceName: string | null }> =
+      await signInStrategy.login(signInDto, this.userService);
     if (!login.success) return login;
-    const user: Admin = login.data as Admin;
+    const user: Admin = login.data.user as Admin;
     const tele_id: number = parseInt(user.teleID || '') ?? 0;
+    const deviceName: string =
+      login.data.deviceName && login.data.deviceName.length > 0
+        ? `trên thiết bị ${login.data.deviceName}`
+        : '';
     this.telebotService.getTelebotGateway().sendMessage({
       id: tele_id,
-      message: `🔔Thông báo🔔\n⚠️Tài khoản của bạn vừa được đăng nhập trên web vào lúc ${new Date()}`,
+      message: `🔔Thông báo🔔\n⚠️Tài khoản của bạn vừa được đăng nhập vào web ${deviceName} vào lúc ${new Date()}`,
       userReceive: user,
+      userSend: null,
     });
 
     const jwtConfigs = this.configService.get<{

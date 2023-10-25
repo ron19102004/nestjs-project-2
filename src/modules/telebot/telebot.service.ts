@@ -92,11 +92,13 @@ export class TelebotService {
     const userReceive: Admin = await this.userService.findByPhoneNumber(
       createMessageDto.phoneNumber,
     );
+    const userSend: Admin = await this.userService.findByEmail(user.email);
     if (!userReceive) return ResponseCustomModule.error('User not found', 404);
     await this.telebotGateway.sendMessage({
       id: parseInt(userReceive.teleID),
       message: `📢Thông báo🔔\n📩Tin nhắn đến bạn: ${createMessageDto.message}${signature}`,
       userReceive: userReceive,
+      userSend: userSend,
     });
     return ResponseCustomModule.ok(null, 'Sent');
   }

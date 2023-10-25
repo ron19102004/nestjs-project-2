@@ -12,13 +12,13 @@ export abstract class SignInStrategy {
   abstract login(
     signInDto: SignInDto,
     userService: UserService,
-  ): Promise<IResObj<Admin>>;
+  ): Promise<IResObj<{ user: Admin; deviceName: string | null }>>;
 }
 export class SignInByEmailStrategy extends SignInStrategy {
   async login(
     signInDto: SignInDto,
     userService: UserService,
-  ): Promise<IResObj<Admin>> {
+  ): Promise<IResObj<{ user: Admin; deviceName: string | null }>> {
     if (!ValidatorCustomModule.isEmail(signInDto.data_login_first.trim()))
       return ResponseCustomModule.error('Email is not valid', 400);
     const user: Admin = await userService.findByEmail(
@@ -27,14 +27,14 @@ export class SignInByEmailStrategy extends SignInStrategy {
     if (!user) return ResponseCustomModule.error('User Not Found', 404);
     if (!HashCustomeModule.compare(signInDto.password, user.password))
       return ResponseCustomModule.error('Password is not valid', 400);
-    return ResponseCustomModule.ok(user, 'Login successful');
+    return ResponseCustomModule.ok({user:user,deviceName:signInDto.deviceName}, 'Login successful');
   }
 }
 export class SignInByPhoneNumberStrategy extends SignInStrategy {
   async login(
     signInDto: SignInDto,
     userService: UserService,
-  ): Promise<IResObj<Admin>> {
+  ): Promise<IResObj<{ user: Admin; deviceName: string | null }>> {
     if (!ValidatorCustomModule.isPhoneNumber(signInDto.data_login_first.trim()))
       return ResponseCustomModule.error('Email is not valid', 400);
     const user: Admin = await userService.findByPhoneNumber(
@@ -43,7 +43,7 @@ export class SignInByPhoneNumberStrategy extends SignInStrategy {
     if (!user) return ResponseCustomModule.error('User Not Found', 404);
     if (!HashCustomeModule.compare(signInDto.password, user.password))
       return ResponseCustomModule.error('Password is not valid', 400);
-    return ResponseCustomModule.ok(user, 'Login successful');
+    return ResponseCustomModule.ok({user:user,deviceName:signInDto.deviceName}, 'Login successful');
   }
 }
 export enum LOGIN_METHOD {

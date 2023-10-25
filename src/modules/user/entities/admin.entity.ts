@@ -35,8 +35,10 @@ export class Admin extends User {
   public branch: Branch;
   @ManyToOne(() => Department, (d: Department) => d.admin)
   public department: Department;
-  @OneToMany(() => Message, (m: Message) => m.admin)
-  public messages: Message;
+  @OneToMany(() => Message, (m: Message) => m.adminReceive)
+  public messagesReceive: Message;
+  @OneToMany(() => Message, (m: Message) => m.adminSend)
+  public messagesSend: Message;
   updateAdmin(
     branch: Branch,
     department: Department,

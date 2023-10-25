@@ -138,7 +138,8 @@ export class TeleBotGateWay {
   public async sendMessage(messend: IMessageSend) {
     const message: Message = new Message();
     message.sent = false;
-    message.admin = messend.userReceive;
+    message.adminReceive = messend.userReceive;
+    message.adminSend = messend.userSend;
     message.content = messend.message;
     await this.messageService.save(message);
     await this.bot
@@ -163,7 +164,7 @@ export class HandleActionTeleBot {
     );
     if (messages.length === 0) return;
     const idTele: number = parseInt(user.teleID);
-    messages.forEach(async (message: Message) => {
+    for (const message of messages) {
       await this.bot.sendMessage(
         idTele,
         `🔔Thông báo bạn chưa nhận📢\n📢Thông báo🔔\n📩Tin nhắn đến bạn: ${message.content}`,
@@ -171,7 +172,7 @@ export class HandleActionTeleBot {
       const msg: Message = message;
       msg.sent = true;
       await this.messageService.save(msg);
-    });
+    }
   }
   public async login(tele_user_id: number, mess: string) {
     const userT: Admin = await this.userService.findByTeleID(`${tele_user_id}`);
@@ -221,11 +222,14 @@ export class HandleActionTeleBot {
     }
     user.teleID = `${tele_user_id}`;
     await this.userService.save(user);
-    this.bot.sendMessage(
-      tele_user_id,
-      `✅Đăng nhập thành công.\n🫴Chào mừng ${user.firstName} ${user.lastName}.`,
-    );
-    await this.callBackMessage(user);
+    this.bot
+      .sendMessage(
+        tele_user_id,
+        `✅Đăng nhập thành công.\n🫴Chào mừng ${user.firstName} ${user.lastName}.`,
+      )
+      .then(async () => {
+        await this.callBackMessage(user);
+      });
   }
   public async info(tele_user_id: number) {
     const user: Admin = await this.userService.findByTeleID(`${tele_user_id}`);
@@ -343,4 +347,5 @@ export interface IMessageSend {
   id: number;
   message: string;
   userReceive: Admin;
+  userSend: Admin;
 }

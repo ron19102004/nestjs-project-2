@@ -13,4 +13,7 @@ export class SignInDto {
   @ApiProperty({ nullable: false })
   @IsString()
   public password: string;
+  @ApiProperty({ nullable: true })
+  @IsString()
+  public deviceName: string;
 }
