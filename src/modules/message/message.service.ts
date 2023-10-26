@@ -18,8 +18,8 @@ export class MessageService {
   public async findByUserSentYet(userId: number): Promise<Message[]> {
     return await this.repository
       .createQueryBuilder('messages')
-      .leftJoinAndSelect('messages.adminReceive', 'admin')
-      .where('messages.adminReceive.id=:idUser', { idUser: userId })
+      .leftJoinAndSelect('messages.user', 'admin')
+      .where('messages.user.id=:idUser', { idUser: userId })
       .andWhere('messages.sent=:sent', { sent: false })
       .orderBy('messages.created_at', 'ASC')
       .getMany();

@@ -35,9 +35,9 @@ export class Admin extends User {
   public branch: Branch;
   @ManyToOne(() => Department, (d: Department) => d.admin)
   public department: Department;
-  @OneToMany(() => Message, (m: Message) => m.adminReceive)
+  @OneToMany(() => Message, (m: Message) => m.user)
   public messagesReceive: Message;
-  @OneToMany(() => Message, (m: Message) => m.adminSend)
+  @OneToMany(() => Message, (m: Message) => m.admin)
   public messagesSend: Message;
   @OneToMany(() => UserServiceEntity, (u: UserServiceEntity) => u.admin)
   public userServices: UserServiceEntity[];

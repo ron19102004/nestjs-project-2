@@ -18,7 +18,7 @@ export class Message extends EntityBase{
     })
     public content: string;
     @ManyToOne(()=>Admin,(a:Admin)=>a.messagesReceive)
-    public adminReceive:Admin
+    public user:Admin
     @ManyToOne(()=>Admin,(a:Admin)=>a.messagesSend)
-    public adminSend:Admin
+    public admin:Admin
 }
