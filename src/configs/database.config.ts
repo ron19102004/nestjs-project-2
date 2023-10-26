@@ -1,7 +1,15 @@
 /* eslint-disable prettier/prettier */
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import envc from './environment.config';
-import { Admin, Branch, Department, Message, Telebot } from 'src/modules';
+import {
+  Admin,
+  Branch,
+  Department,
+  Message,
+  Telebot,
+  Service,
+  UserServiceEntity,
+} from 'src/modules';
 interface IConfigsDatabase {
   HOST: string;
   PORT: number;
@@ -19,7 +27,15 @@ export default {
   database: configDatabase.DATABASE,
   synchronize: true,
   logging: false,
-  entities: [Admin, Branch, Department,Telebot,Message],
+  entities: [
+    Admin,
+    Branch,
+    Department,
+    Telebot,
+    Message,
+    Service,
+    UserServiceEntity,
+  ],
   subscribers: [],
   migrations: [],
 } as TypeOrmModuleOptions;

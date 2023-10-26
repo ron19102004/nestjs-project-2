@@ -2,26 +2,26 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Branch } from '..';
+import { Repository } from 'typeorm';
+import { ResponseCustomModule } from 'src/helpers/response.help';
 
 @Injectable()
 export class BranchService {
-  create(createBranchDto: CreateBranchDto) {
-    return 'This action adds a new branch';
+  constructor(
+    @InjectRepository(Branch) private repository: Repository<Branch>,
+  ) {}
+  async create(createBranchDto: CreateBranchDto) {
+    const branch: Branch = await this.repository.save(createBranchDto);
+    return ResponseCustomModule.ok(branch, 'Thêm nhánh thành công');
   }
-
-  findAll() {
-    return `This action returns all branch`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} branch`;
-  }
-
-  update(id: number, updateBranchDto: UpdateBranchDto) {
-    return `This action updates a #${id} branch`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} branch`;
+  async findById(id: number) {
+    return await this.repository.findOne({
+      where: {
+        id: id,
+        deleted: false,
+      },
+    });
   }
 }

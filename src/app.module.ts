@@ -8,6 +8,8 @@ import { UserModule } from './modules/user/user.module';
 import { AuthsModule } from './auths/auths.module';
 import { TelebotModule } from './modules/telebot/telebot.module';
 import { MessageModule } from './modules/message/message.module';
+import { ServiceModule } from './modules/service/service.module';
+import { UserServiceModule } from './modules/user-service/user-service.module';
 import configs_custom from './configs/environment.config';
 import typeormModuleOptionsCustom from './configs/database.config';
 @Module({
@@ -24,6 +26,8 @@ import typeormModuleOptionsCustom from './configs/database.config';
     AuthsModule,
     TelebotModule,
     MessageModule,
+    ServiceModule,
+    UserServiceModule,
   ],
   controllers: [],
   providers: [],
