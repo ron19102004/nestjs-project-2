@@ -31,8 +31,7 @@ export class ProcessBookingService {
     processBooking.booking = booking;
     processBooking.notes = createProcessBookingDto.notes;
     processBooking.time = createProcessBookingDto.time;
-    const processBookingNew: ProcessBooking =
-      await this.repository.save(processBooking);
+    await this.repository.save(processBooking);
     await this.teleBotService.sendMessageByPhonenumber(null, {
       phoneNumber: booking.user.phoneNumber,
       message: `\n🔔Đây là thông báo tự động📩.
@@ -43,10 +42,7 @@ Hồ sơ lịch hẹn ${booking.id}id do ${
 2:Ghi chú: ${processBooking.notes}.
 Mọi chi tiết xin liên hệ tại mục quản lý của website: ${this.bookingService.getURL_FRONTEND()}`,
     });
-    return ResponseCustomModule.ok(
-      processBookingNew,
-      'Thêm một xử lí lịch hẹn thành công',
-    );
+    return ResponseCustomModule.ok(null, 'Thêm một xử lí lịch hẹn thành công');
   }
   async findById(id: number) {
     return await this.repository
@@ -89,38 +85,54 @@ Mọi chi tiết xin liên hệ tại mục quản lý của website: ${this.boo
     finishedProcess: boolean,
     finishedBooking: boolean,
   ) {
-    return await this.repository
+    const processBookings: ProcessBooking[] = await this.repository
       .createQueryBuilder('process_booking')
       .leftJoinAndSelect('process_booking.booking', 'booking')
-      .where('process_booking.booking.admin.id=:id', { id: adminId })
-      .andWhere('process_booking.finished=:finished', {
+      .where('process_booking.finished=:finished', {
         finished: finishedProcess,
-      })
-      .andWhere('process_booking.booking.finished=:finishedB', {
-        finishedB: finishedBooking,
       })
       .andWhere('process_booking.deleted=:deleted', { deleted: false })
       .orderBy('process_booking.created_at', 'ASC')
       .getMany();
+    const data: ProcessBooking[] = [];
+    for (const item of processBookings) {
+      const booking: Booking = await this.bookingService.findById(
+        item.booking.id,
+        finishedBooking,
+        true,
+        false,
+      );
+      if (booking && booking.admin.id + '' === adminId + '') {
+        data.push(item);
+      }
+    }
+    return data;
   }
   async findManyByIdBookingForAdmin(
     adminID: number,
     id: number,
     finishedBooking: boolean,
   ) {
-    return await this.repository
+    const processBookings: ProcessBooking[] = await this.repository
       .createQueryBuilder('process_booking')
       .leftJoinAndSelect('process_booking.booking', 'booking')
       .where('process_booking.booking.id=:id', { id: id })
-      .andWhere('process_booking.booking.finished=:finishedB', {
-        finishedB: finishedBooking,
-      })
-      .andWhere('process_booking.booking.admin.id=:adminID', {
-        adminID: adminID,
-      })
       .andWhere('process_booking.deleted=:deleted', { deleted: false })
       .orderBy('process_booking.created_at', 'ASC')
       .getMany();
+    const data: ProcessBooking[] = [];
+    for (const item of processBookings) {
+      const booking: Booking = await this.bookingService.findById(
+        item.booking.id,
+        finishedBooking,
+        true,
+        false,
+      );
+      if (booking && booking.admin.id + '' === adminID + '') {
+        data.push(item);
+      }
+    }
+    return data;
   }
   //for user
   async findManyByConditionsForUser(
@@ -128,37 +140,53 @@ Mọi chi tiết xin liên hệ tại mục quản lý của website: ${this.boo
     finishedProcess: boolean,
     finishedBooking: boolean,
   ) {
-    return await this.repository
+    const processBookings: ProcessBooking[] = await this.repository
       .createQueryBuilder('process_booking')
       .leftJoinAndSelect('process_booking.booking', 'booking')
-      .where('process_booking.booking.user.id=:id', { id: userID })
-      .andWhere('process_booking.finished=:finished', {
+      .where('process_booking.finished=:finished', {
         finished: finishedProcess,
-      })
-      .andWhere('process_booking.booking.finished=:finishedB', {
-        finishedB: finishedBooking,
       })
       .andWhere('process_booking.deleted=:deleted', { deleted: false })
       .orderBy('process_booking.created_at', 'ASC')
       .getMany();
+    const data: ProcessBooking[] = [];
+    for (const item of processBookings) {
+      const booking: Booking = await this.bookingService.findById(
+        item.booking.id,
+        finishedBooking,
+        true,
+        false,
+      );
+      if (booking && booking.user.id + '' === userID + '') {
+        data.push(item);
+      }
+    }
+    return data;
   }
   async findManyByIdBookingForUser(
     userID: number,
     id: number,
     finishedBooking: boolean,
   ) {
-    return await this.repository
+    const processBookings: ProcessBooking[] = await this.repository
       .createQueryBuilder('process_booking')
       .leftJoinAndSelect('process_booking.booking', 'booking')
       .where('process_booking.booking.id=:id', { id: id })
-      .andWhere('process_booking.booking.finished=:finishedB', {
-        finishedB: finishedBooking,
-      })
-      .andWhere('process_booking.booking.user.id=:userID', {
-        userID: userID,
-      })
       .andWhere('process_booking.deleted=:deleted', { deleted: false })
       .orderBy('process_booking.created_at', 'ASC')
       .getMany();
+    const data: ProcessBooking[] = [];
+    for (const item of processBookings) {
+      const booking: Booking = await this.bookingService.findById(
+        item.booking.id,
+        finishedBooking,
+        true,
+        false,
+      );
+      if (booking && booking.user.id + '' === userID + '') {
+        data.push(item);
+      }
+    }
+    return data;
   }
 }

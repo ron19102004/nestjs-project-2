@@ -40,13 +40,13 @@ export class AdminPayload extends AuthsPayload {
       refresh_token: user.refresh_token,
       bio: user?.bio,
       branch: {
-        name: user.branch.name,
-        hotline:user.branch.hotline,
-        id: user.branch.id
+        name: user?.branch?.name,
+        hotline:user?.branch?.hotline,
+        id: user?.branch?.id
       },
       department: {
-        name: user.department.name,
-        id: user.department.id
+        name: user?.department?.name,
+        id: user?.department?.id
       },
       position: user.position,
       member_of_organization: user.member_of_organization,

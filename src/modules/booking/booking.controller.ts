@@ -37,7 +37,7 @@ export class BookingController {
   }
   @Post('/user/:id')
   @UseGuards(MyselfGuard)
-  @Roles(Role.admin, Role.master,Role.user)
+  @Roles(Role.admin, Role.master, Role.user)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
@@ -102,7 +102,7 @@ export class BookingController {
     const data: IDataBookingDto[] = [];
     for (const item of bookings) {
       const user: Admin = item.user;
-      const admin: Admin = item.admin;
+      const admin: Admin = item.admin;      
       data.push({
         service: item.service,
         admin: AuthsPayloads[admin.role].payload(admin),
@@ -161,9 +161,9 @@ export class BookingController {
     const booking: Booking[] =
       await this.bookingService.findManyByConditionsForAdmin(
         id,
+        finished,
         accepted,
         injected,
-        finished,
       );
     const data: IDataBookingDto[] = this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
@@ -186,9 +186,9 @@ export class BookingController {
     const booking: Booking[] =
       await this.bookingService.findManyByConditionsForUser(
         id,
+        finished,
         accepted,
         injected,
-        finished,
       );
     const data: IDataBookingDto[] = this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
