@@ -26,7 +26,7 @@ export class RolesGuard implements CanActivate {
     if(!payload) return false;
     if (!requiredRoles) {
       return true;
-    }
+    }    
     return requiredRoles.some((role) => payload.role === role);
   }
 }

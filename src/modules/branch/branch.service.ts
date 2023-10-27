@@ -24,4 +24,11 @@ export class BranchService {
       },
     });
   }
+  async findAll() {
+    return await this.repository.find({
+      where: {
+        deleted: false,
+      },
+    });
+  }
 }

@@ -38,4 +38,11 @@ export class DepartmentService {
       .andWhere('departments.deleted=:deleted', { deleted: false })
       .getOne();
   }
+  async findAll(): Promise<Department[]> {
+    return await this.repository
+      .createQueryBuilder('departments')
+      .leftJoinAndSelect('departments.branch', 'branch')
+      .andWhere('departments.deleted=:deleted', { deleted: false })
+      .getMany();
+  }
 }

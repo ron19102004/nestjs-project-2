@@ -30,4 +30,8 @@ export class DepartmentController {
   async create(@Body() createDepartmentDto: CreateDepartmentDto) {
     return await this.departmentService.create(createDepartmentDto);
   }
+  @Get()
+  async get(){
+    return await this.departmentService.findAll()
+  }
 }

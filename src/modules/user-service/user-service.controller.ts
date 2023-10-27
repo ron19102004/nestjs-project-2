@@ -1,35 +1,43 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserServiceService } from './user-service.service';
 import { CreateUserServiceDto } from './dto/create-user-service.dto';
-import { UpdateUserServiceDto } from './dto/update-user-service.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AuthsGuard } from 'src/auths/auths.guard';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles } from 'src/auths/decorators/role.decorator';
+import { Role } from '../user/interfaces/enum';
+import { UserService } from './entities/user-service.entity';
+import { ResponseCustomModule } from 'src/helpers/response.help';
 
-@Controller('user-service')
+@Controller('users-services')
+@ApiTags('users-services')
 export class UserServiceController {
   constructor(private readonly userServiceService: UserServiceService) {}
-
-  @Post()
-  create(@Body() createUserServiceDto: CreateUserServiceDto) {
-    return this.userServiceService.create(createUserServiceDto);
+  @Post('')
+  @ApiBearerAuth()
+  @Roles(Role.master)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  async create(@Body() createUserServiceDto: CreateUserServiceDto) {
+    return await this.userServiceService.create(createUserServiceDto);
   }
-
-  @Get()
-  findAll() {
-    return this.userServiceService.findAll();
+  @Get('/admin/id')
+  async findByIdAdmin(@Param('id') id: number) {
+    const userService: UserService[] =
+      await this.userServiceService.findByIdAdmin(id);
+    return ResponseCustomModule.ok(userService, 'Truy xuất thành công');
   }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userServiceService.findOne(+id);
+  @Get('/admin/:email')
+  async findByEmailAdmin(@Param('email') email: string) {
+    const userService: UserService[] =
+      await this.userServiceService.findByEmailAdmin(email);
+    return ResponseCustomModule.ok(userService, 'Truy xuất thành công');
   }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserServiceDto: UpdateUserServiceDto) {
-    return this.userServiceService.update(+id, updateUserServiceDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userServiceService.remove(+id);
+  @Get('/service/:id')
+  async findByIdService(@Param('id') id: number) {
+    const userService: UserService[] =
+      await this.userServiceService.findByIdService(id);
+    return ResponseCustomModule.ok(userService, 'Truy xuất thành công');
   }
 }

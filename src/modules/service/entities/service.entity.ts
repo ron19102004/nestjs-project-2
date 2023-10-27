@@ -1,4 +1,4 @@
-import { UserServiceEntity } from 'src/modules';
+import { Booking, UserServiceEntity } from 'src/modules';
 import { EntityBase } from 'src/modules/base/entity.base';
 import { Department } from 'src/modules/department/entities/department.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
@@ -29,4 +29,6 @@ export class Service extends EntityBase {
   public department: Department;
   @OneToMany(() => UserServiceEntity, (u: UserServiceEntity) => u.service)
   public userServices: UserServiceEntity[];
+  @OneToMany(() => Booking, (b: Booking) => b.service)
+  public booking: Booking[];
 }

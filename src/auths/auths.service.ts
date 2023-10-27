@@ -4,7 +4,6 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/modules/user/user.service';
 import { SignInDto } from './dto/sign-in.dto';
 import {
-  SignInStrategy,
   SignInStrategys,
 } from './gateways/auths-signIn.gateway';
 import { IResObj, ResponseCustomModule } from 'src/helpers/response.help';
@@ -22,10 +21,11 @@ export class AuthsService {
     private telebotService: TelebotService,
   ) {}
   async signIn(signInDto: SignInDto) {
-    const signInStrategy: SignInStrategy =
-      SignInStrategys[signInDto.login_method];
     const login: IResObj<{ user: Admin; deviceName: string | null }> =
-      await signInStrategy.login(signInDto, this.userService);
+      await SignInStrategys[signInDto.login_method].login(
+        signInDto,
+        this.userService,
+      );
     if (!login.success) return login;
     const user: Admin = login.data.user as Admin;
     const tele_id: number = parseInt(user.teleID || '') ?? 0;

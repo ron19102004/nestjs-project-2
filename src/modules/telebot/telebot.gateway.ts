@@ -138,8 +138,8 @@ export class TeleBotGateWay {
   public async sendMessage(messend: IMessageSend) {
     const message: Message = new Message();
     message.sent = false;
-    message.adminReceive = messend.userReceive;
-    message.adminSend = messend.userSend;
+    message.user = messend.userReceive;
+    message.admin = messend.userSend;
     message.content = messend.message;
     await this.messageService.save(message);
     await this.bot
@@ -167,7 +167,7 @@ export class HandleActionTeleBot {
     for (const message of messages) {
       await this.bot.sendMessage(
         idTele,
-        `🔔Thông báo bạn chưa nhận📢\n📢Thông báo🔔\n📩Tin nhắn đến bạn: ${message.content}`,
+        `🔔Thông báo bạn chưa nhận📢\n${message.content}`,
       );
       const msg: Message = message;
       msg.sent = true;
@@ -348,4 +348,11 @@ export interface IMessageSend {
   message: string;
   userReceive: Admin;
   userSend: Admin;
+}
+export interface IAdminSendMessage {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
 }

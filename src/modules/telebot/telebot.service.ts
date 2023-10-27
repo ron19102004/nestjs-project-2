@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Telebot } from './entities/telebot.entity';
 import { Repository } from 'typeorm';
 import { CreateTeleBotDto } from './dto/create-telebot.dto';
-import { TeleBotGateWay } from './telebot.gateway';
+import { IAdminSendMessage, TeleBotGateWay } from './telebot.gateway';
 import { UserService } from '../user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { Admin } from '../user/entities/admin.entity';
@@ -73,26 +73,24 @@ export class TelebotService {
     });
   }
   async sendMessageByPhonenumber(
-    user: {
-      firstName: string;
-      lastName: string;
-      email: string;
-      phone: string;
-      address: string;
-    },
+    admin: IAdminSendMessage | null,
     createMessageDto: CreateMessageDto,
   ) {
-    const signature = `\n🚩Chử ký🚩
-  Tên người gửi: ${user.firstName} ${user.lastName}
-  Email: ${user.email}
-  Số điện thoại: ${user.phone}
-  Địa chỉ: ${user.address}
+    const signature = admin
+      ? `\n🚩Chử ký🚩
+  Tên người gửi: ${admin.firstName} ${admin.lastName}
+  Email: ${admin.email}
+  Số điện thoại: ${admin.phone}
+  Địa chỉ: ${admin.address}
   Thời gian gửi: ${new Date()}
-  `;
+  `
+      : '';
     const userReceive: Admin = await this.userService.findByPhoneNumber(
       createMessageDto.phoneNumber,
     );
-    const userSend: Admin = await this.userService.findByEmail(user.email);
+    const userSend: Admin = admin
+      ? await this.userService.findByEmail(admin.email)
+      : null;
     if (!userReceive) return ResponseCustomModule.error('User not found', 404);
     await this.telebotGateway.sendMessage({
       id: parseInt(userReceive.teleID),

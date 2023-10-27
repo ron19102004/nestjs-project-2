@@ -15,4 +15,5 @@ export default () => ({
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
   },
   TOKEN_TELEGRAM: process.env.TOKEN_TELEGRAM,
+  URL_FRONTEND: process.env.URL_FRONTEND
 });

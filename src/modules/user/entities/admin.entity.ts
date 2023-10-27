@@ -1,9 +1,13 @@
 /* eslint-disable prettier/prettier */
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { User } from './user.entity';
-import { Branch, Department, UserServiceEntity } from 'src/modules';
-import { Message } from 'src/modules/message/entities/message.entity';
-
+import {
+  Branch,
+  Department,
+  UserServiceEntity,
+  Message,
+  Booking,
+} from 'src/modules';
 @Entity({ name: 'users' })
 export class Admin extends User {
   @Column({
@@ -41,6 +45,10 @@ export class Admin extends User {
   public messagesSend: Message;
   @OneToMany(() => UserServiceEntity, (u: UserServiceEntity) => u.admin)
   public userServices: UserServiceEntity[];
+  @OneToMany(() => Booking, (b: Booking) => b.admin)
+  public bookingForAdmin: Booking[];
+  @OneToMany(() => Booking, (b: Booking) => b.user)
+  public bookingForUser: Booking[];
   updateAdmin(
     branch: Branch,
     department: Department,

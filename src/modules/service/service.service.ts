@@ -28,4 +28,13 @@ export class ServiceService {
     const service_new: Service = await this.repository.save(service);
     return ResponseCustomModule.ok(service_new, 'Thêm dịch vụ thành công');
   }
+  async findById(id: number): Promise<Service> {
+    return await this.repository.findOne({
+      relations: ['department'],
+      where: {
+        id: id,
+        deleted: false,
+      },
+    });
+  }
 }

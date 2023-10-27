@@ -10,17 +10,17 @@ import { Telebot } from './telebot/entities/telebot.entity';
 import { Message } from './message/entities/message.entity';
 import { Service } from './service/entities/service.entity';
 import { UserService as UserServiceEntity } from './user-service/entities/user-service.entity';
+import { Booking } from './booking/entities/booking.entity';
+import { ProcessBooking } from './process-booking/entities/process-booking.entity';
+export { BranchModule, DepartmentModule, UserModule };
 export {
-    BranchModule,
-    DepartmentModule,
-    UserModule
-}
-export {
-    Branch,
-    Admin,
-    Department,
-    Telebot,
-    Message,
-    Service,
-    UserServiceEntity
-}
+  Branch,
+  Admin,
+  Department,
+  Telebot,
+  Message,
+  Service,
+  UserServiceEntity,
+  Booking,
+  ProcessBooking
+};

@@ -8,9 +8,9 @@ export class MyselfGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const payload = request.payload || null;
-    const id = request.params.id || null;
+    const id = request.params.id || null;    
     if (!payload || !id) return false;
-    if (id !== payload.id) return false;
+    if (id !== payload.id+'') return false;
     return true;
   }
 }

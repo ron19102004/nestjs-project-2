@@ -9,6 +9,8 @@ import {
   Telebot,
   Service,
   UserServiceEntity,
+  Booking,
+  ProcessBooking,
 } from 'src/modules';
 interface IConfigsDatabase {
   HOST: string;
@@ -35,6 +37,8 @@ export default {
     Message,
     Service,
     UserServiceEntity,
+    Booking,
+    ProcessBooking,
   ],
   subscribers: [],
   migrations: [],
