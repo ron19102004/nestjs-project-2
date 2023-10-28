@@ -34,6 +34,13 @@ export class Booking extends EntityBase {
     default: false,
   })
   public finished: boolean;
+  @Column({
+    name: 'timeInit',
+    type: 'varchar',
+    nullable: true,
+    length: 255,
+  })
+  public timeInit: string;
   @ManyToOne(() => Service, (s: Service) => s.booking)
   public service: Service;
   @ManyToOne(() => Admin, (a: Admin) => a.bookingForAdmin)

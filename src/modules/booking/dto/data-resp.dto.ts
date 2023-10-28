@@ -10,4 +10,12 @@ export interface IDataBookingDto {
   finished_at: Date;
   accepted: boolean;
   rejected: boolean;
+  created_at: Date;
+  id:number,
+  timeInit:string
+}
+export enum EAction {
+  ACCEPT = "accept",
+  REJECT = "reject",
+  FINISH = "finish",
 }

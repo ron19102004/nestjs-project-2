@@ -1,37 +1,36 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Response,
+  UseGuards,
+} from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
-import { UpdateFeedbackDto } from './dto/update-feedback.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { AuthsGuard } from 'src/auths/auths.guard';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles } from 'src/auths/decorators/role.decorator';
+import { MyselfGuard } from 'src/guards/myself.guard';
+import { Role } from '../user/interfaces/enum';
 
 @ApiTags('feedbacks')
 @Controller('feedback')
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
-
   @Post()
-  create(@Body() createFeedbackDto: CreateFeedbackDto) {
-    return this.feedbackService.create(createFeedbackDto);
+  @UseGuards(MyselfGuard)
+  @Roles(Role.admin, Role.master, Role.user)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  async create(@Response() req, @Body() createFeedbackDto: CreateFeedbackDto) {
+    return await this.feedbackService.create(req.payload.id, createFeedbackDto);
   }
-
   @Get()
-  findAll() {
-    return this.feedbackService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.feedbackService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFeedbackDto: UpdateFeedbackDto) {
-    return this.feedbackService.update(+id, updateFeedbackDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.feedbackService.remove(+id);
+  async get() {
+    return await this.feedbackService.findAll();
   }
 }

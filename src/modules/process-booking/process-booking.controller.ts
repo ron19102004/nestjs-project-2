@@ -109,7 +109,7 @@ export class ProcessBookingController {
       );
     return ResponseCustomModule.ok(processBooking, 'Lấy thành công');
   }
-  @Put('/admin/id:id&processBookingId=:processBookingId')
+  @Put('/admin/finish/id:id&processBookingId=:processBookingId')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master)
   @UseGuards(RolesGuard)

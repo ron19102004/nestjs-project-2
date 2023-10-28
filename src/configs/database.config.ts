@@ -11,6 +11,7 @@ import {
   UserServiceEntity,
   Booking,
   ProcessBooking,
+  Feedback,
 } from 'src/modules';
 interface IConfigsDatabase {
   HOST: string;
@@ -39,6 +40,7 @@ export default {
     UserServiceEntity,
     Booking,
     ProcessBooking,
+    Feedback,
   ],
   subscribers: [],
   migrations: [],

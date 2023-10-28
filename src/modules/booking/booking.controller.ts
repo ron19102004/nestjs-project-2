@@ -18,9 +18,10 @@ import { Role } from '../user/interfaces/enum';
 import { MyselfGuard } from 'src/guards/myself.guard';
 import { Admin } from '../user/entities/admin.entity';
 import { Booking } from './entities/booking.entity';
-import { IDataBookingDto } from './dto/data-resp.dto';
+import { EAction, IDataBookingDto } from './dto/data-resp.dto';
 import { AuthsPayloads } from 'src/auths/gateways/auths-payload.gateway';
 import { ResponseCustomModule } from 'src/helpers/response.help';
+import { ShowAllForAdminDto } from './dto/show-all-for-ad.dto';
 
 @Controller('booking')
 @ApiTags('booking')
@@ -44,14 +45,18 @@ export class BookingController {
   async createForUser(@Body() createBookingDto: CreateBookingDto) {
     return await this.bookingService.createForUser(createBookingDto);
   }
-  @Post('/admin/id=:id&bookingID=:idBooking/accept')
+  @Post('/admin/id=:id&bookingID=:idBooking/action=:action')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
-  async acceptForAdmin(@Request() req, @Param('idBooking') idBooking: number) {
-    return await this.bookingService.acceptBookingByIdBookingForAdmin(
+  async actionForAdmin(
+    @Request() req,
+    @Param('idBooking') idBooking: number,
+    @Param('action') action: EAction,
+  ) {
+    return await this.bookingService.actionBookingByIdBookingForAdmin(
       {
         firstName: req?.payload?.firstName,
         lastName: req?.payload?.lastName,
@@ -60,50 +65,16 @@ export class BookingController {
         address: req?.payload?.address,
       },
       idBooking,
-    );
-  }
-  @Post('/admin/id=:id&bookingID=:idBooking/reject')
-  @UseGuards(MyselfGuard)
-  @Roles(Role.admin, Role.master)
-  @UseGuards(RolesGuard)
-  @UseGuards(AuthsGuard)
-  @ApiBearerAuth()
-  async rejectForAdmin(@Request() req, @Param('idBooking') idBooking: number) {
-    return await this.bookingService.rejectBookingByIdBookingForAdmin(
-      {
-        firstName: req?.payload?.firstName,
-        lastName: req?.payload?.lastName,
-        email: req?.payload?.email,
-        phone: req?.payload?.phoneNumber,
-        address: req?.payload?.address,
-      },
-      idBooking,
-    );
-  }
-  @Post('/admin/id=:id&bookingID=:idBooking/finish')
-  @UseGuards(MyselfGuard)
-  @Roles(Role.admin, Role.master)
-  @UseGuards(RolesGuard)
-  @UseGuards(AuthsGuard)
-  @ApiBearerAuth()
-  async finishForAdmin(@Request() req, @Param('idBooking') idBooking: number) {
-    return await this.bookingService.finishBookingByIdBookingForAdmin(
-      {
-        firstName: req?.payload?.firstName,
-        lastName: req?.payload?.lastName,
-        email: req?.payload?.email,
-        phone: req?.payload?.phoneNumber,
-        address: req?.payload?.address,
-      },
-      idBooking,
+      action,
     );
   }
   private modifiesBookings(bookings: Booking[]): IDataBookingDto[] {
     const data: IDataBookingDto[] = [];
     for (const item of bookings) {
       const user: Admin = item.user;
-      const admin: Admin = item.admin;      
+      const admin: Admin = item.admin;
       data.push({
+        id: item.id,
         service: item.service,
         admin: AuthsPayloads[admin.role].payload(admin),
         user: AuthsPayloads[user.role].payload(user),
@@ -112,11 +83,13 @@ export class BookingController {
         finished_at: item.finished_at,
         accepted: item.accepted,
         rejected: item.rejected,
+        created_at: item.created_at,
+        timeInit: item.timeInit,
       });
     }
     return data;
   }
-  @Get('/user/:id')
+  @Post('/user/all/:id')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master, Role.user)
   @UseGuards(RolesGuard)
@@ -131,15 +104,35 @@ export class BookingController {
       'Lấy tất cả hồ sơ lịch hẹn thành công',
     );
   }
-  @Get('/admin/:id')
+  @Post('/admin/all/:id')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
-  async showAllBookingForAdmin(@Param('id') id: number) {
+  async showAllBookingForAdmin(
+    @Param('id') id: number,
+    @Body() showAllForAdminDto: ShowAllForAdminDto,
+  ) {
+    const booking: Booking[] = await this.bookingService.showAllBookingForAdmin(
+      id,
+      showAllForAdminDto,
+    );
+    const data: IDataBookingDto[] = this.modifiesBookings(booking);
+    return ResponseCustomModule.ok(
+      data,
+      'Lấy tất cả hồ sơ lịch hẹn thành công',
+    );
+  }
+  @Get('/admin/all/:id')
+  @UseGuards(MyselfGuard)
+  @Roles(Role.admin, Role.master)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  async showAllBookingForAdminNotPagation(@Param('id') id: number) {
     const booking: Booking[] =
-      await this.bookingService.showAllBookingForAdmin(id);
+      await this.bookingService.showAllBookingForAdminNotSkipTake(id);
     const data: IDataBookingDto[] = this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
       data,

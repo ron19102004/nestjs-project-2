@@ -21,7 +21,6 @@ export class AuthsGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException();
-      
     }
     try {
       const jwtConfigs = this.configService.get<{
@@ -32,7 +31,7 @@ export class AuthsGuard implements CanActivate {
         secret: jwtConfigs.ACCESS_TOKEN_SECRET,
       });
       request['payload'] = payload;
-    } catch {
+    } catch (error: any) {
       throw new UnauthorizedException();
     }
     return true;

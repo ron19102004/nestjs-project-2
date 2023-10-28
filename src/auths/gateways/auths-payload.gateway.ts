@@ -20,7 +20,6 @@ export class UserPayload extends AuthsPayload {
       age: user.age,
       role: user.role,
       avatar: user.avatar,
-      refresh_token: user.refresh_token,
     };
   }
 }
@@ -37,7 +36,6 @@ export class AdminPayload extends AuthsPayload {
       age: user.age,
       role: user.role,
       avatar: user.avatar,
-      refresh_token: user.refresh_token,
       bio: user?.bio,
       branch: {
         name: user?.branch?.name,

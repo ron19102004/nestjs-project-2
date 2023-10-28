@@ -8,6 +8,7 @@ import {
   Message,
   Booking,
 } from 'src/modules';
+import { Feedback } from 'src/modules/feedback/entities/feedback.entity';
 @Entity({ name: 'users' })
 export class Admin extends User {
   @Column({
@@ -49,6 +50,8 @@ export class Admin extends User {
   public bookingForAdmin: Booking[];
   @OneToMany(() => Booking, (b: Booking) => b.user)
   public bookingForUser: Booking[];
+  @OneToMany(() => Feedback, (f: Feedback) => f.user)
+  public feedBacks: Feedback[];
   updateAdmin(
     branch: Branch,
     department: Department,

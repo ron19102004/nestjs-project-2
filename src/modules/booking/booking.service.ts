@@ -11,6 +11,9 @@ import { Service } from '../service/entities/service.entity';
 import { TelebotService } from '../telebot/telebot.service';
 import { IAdminSendMessage } from '../telebot/telebot.gateway';
 import { ConfigService } from '@nestjs/config';
+import { EAction } from './dto/data-resp.dto';
+import { ShowAllForAdminDto } from './dto/show-all-for-ad.dto';
+import { ValidatorCustomModule } from 'src/helpers/validator.help';
 
 @Injectable()
 export class BookingService {
@@ -23,6 +26,9 @@ export class BookingService {
     private configService: ConfigService,
   ) {
     this.URL_FRONTEND = this.configService.get<string>('URL_FRONTEND');
+  }
+  getRepository() {
+    return this.repositoty;
   }
   getURL_FRONTEND(): string {
     return this.URL_FRONTEND;
@@ -50,6 +56,7 @@ export class BookingService {
     booking.user = user;
     booking.admin = admin;
     booking.service = service;
+    booking.timeInit = ValidatorCustomModule.getDate();
     const bookingNew: Booking = await this.repositoty.save(booking);
     await this.teleBotService.sendMessageByPhonenumber(
       {
@@ -88,6 +95,7 @@ export class BookingService {
     booking.user = user;
     booking.admin = admin;
     booking.service = service;
+    booking.timeInit = ValidatorCustomModule.getDate();
     const bookingNew: Booking = await this.repositoty.save(booking);
     await this.teleBotService.sendMessageByPhonenumber(
       {
@@ -124,43 +132,56 @@ export class BookingService {
   }
 
   //function for admin
-  async acceptBookingByIdBookingForAdmin(admin: IAdminSendMessage, id: number) {
-    const booking: Booking = await this.findById(id, false, false, false);
+  async actionBookingByIdBookingForAdmin(
+    admin: IAdminSendMessage,
+    id: number,
+    action: EAction,
+  ) {
+    let booking: Booking;
+    switch (action) {
+      case EAction.REJECT: {
+        booking = await this.findById(id, false, false, false);
+        break;
+      }
+      case EAction.ACCEPT: {
+        booking = await this.findById(id, false, false, false);
+        break;
+      }
+      case EAction.FINISH: {
+        booking = await this.findById(id, false, true, false);
+        break;
+      }
+    }
     if (!booking)
       return ResponseCustomModule.error('Không tìm thấy hồ sơ người dùng', 404);
-    booking.accepted = true;
+    let actionString: string = 'được chấp nhận';
+    switch (action) {
+      case EAction.ACCEPT: {
+        booking.accepted = true;
+        break;
+      }
+      case EAction.FINISH: {
+        booking.finished = true;
+        actionString = 'được hoàn thành';
+        break;
+      }
+      case EAction.REJECT: {
+        booking.rejected = true;
+        actionString = 'bị từ chối';
+        break;
+      }
+    }
     await this.repositoty.save(booking);
     await this.teleBotService.sendMessageByPhonenumber(admin, {
       phoneNumber: booking.user.phoneNumber,
-      message: `Lịch hẹn ${booking.id}id của ${booking.user.lastName} với ${booking.admin.firstName} ${booking.admin.lastName} đã được chấp nhận. Vui lòng kiểm tra trên website của chúng tôi: ${this.URL_FRONTEND}`,
+      message: `Lịch hẹn ${booking.id}id của ${booking.user.lastName} với ${booking.admin.firstName} ${booking.admin.lastName} đã ${actionString}. Vui lòng kiểm tra trên website của chúng tôi: ${this.URL_FRONTEND}`,
     });
-    return ResponseCustomModule.ok(null, 'Chấp nhận thành công');
+    return ResponseCustomModule.ok(null, `Thao tác thành công`);
   }
-  async rejectBookingByIdBookingForAdmin(admin: IAdminSendMessage, id: number) {
-    const booking: Booking = await this.findById(id, false, false, false);
-    if (!booking)
-      return ResponseCustomModule.error('Không tìm thấy hồ sơ người dùng', 404);
-    booking.rejected = true;
-    await this.repositoty.save(booking);
-    await this.teleBotService.sendMessageByPhonenumber(admin, {
-      phoneNumber: booking.user.phoneNumber,
-      message: `Lịch hẹn ${booking.id}id của ${booking.user.lastName} với ${booking.admin.firstName} ${booking.admin.lastName} đã bị từ chối. Vui lòng kiểm tra trên website của chúng tôi: ${this.URL_FRONTEND}`,
-    });
-    return ResponseCustomModule.ok(null, 'Chấp nhận thành công');
-  }
-  async finishBookingByIdBookingForAdmin(admin: IAdminSendMessage, id: number) {
-    const booking: Booking = await this.findById(id, false, true, false);
-    if (!booking)
-      return ResponseCustomModule.error('Không tìm thấy hồ sơ người dùng', 404);
-    booking.finished = true;
-    await this.repositoty.save(booking);
-    await this.teleBotService.sendMessageByPhonenumber(admin, {
-      phoneNumber: booking.user.phoneNumber,
-      message: `Lịch hẹn ${booking.id}id của ${booking.user.lastName} với ${booking.admin.firstName} ${booking.admin.lastName} đã được hoàn thành. Vui lòng kiểm tra trên website của chúng tôi: ${this.URL_FRONTEND}`,
-    });
-    return ResponseCustomModule.ok(null, 'Chấp nhận thành công');
-  }
-  async showAllBookingForAdmin(idAdmin: number) {
+  async showAllBookingForAdmin(
+    idAdmin: number,
+    showAllForAdminDto: ShowAllForAdminDto,
+  ) {
     return await this.repositoty
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.admin', 'admin')
@@ -168,7 +189,20 @@ export class BookingService {
       .leftJoinAndSelect('booking.service', 'service')
       .where('booking.admin.id=:id', { id: idAdmin })
       .andWhere('booking.deleted=:deleted', { deleted: false })
-      .orderBy('booking.created_at', 'ASC')
+      .orderBy('booking.created_at', 'DESC')
+      .skip(showAllForAdminDto.skip ?? 0)
+      .take(showAllForAdminDto.take ?? 10)
+      .getMany();
+  }
+  async showAllBookingForAdminNotSkipTake(idAdmin: number) {
+    return await this.repositoty
+      .createQueryBuilder('booking')
+      .leftJoinAndSelect('booking.admin', 'admin')
+      .leftJoinAndSelect('booking.user', 'user')
+      .leftJoinAndSelect('booking.service', 'service')
+      .where('booking.admin.id=:id', { id: idAdmin })
+      .andWhere('booking.deleted=:deleted', { deleted: false })
+      .orderBy('booking.created_at', 'DESC')
       .getMany();
   }
   async findManyByConditionsForAdmin(
