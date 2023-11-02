@@ -43,11 +43,6 @@ export class TeleBotGateWay {
     this.bot$.on('text', async (ctx) => await this.handleMessage(ctx.message));
     this.bot$.launch({
       dropPendingUpdates: false,
-      webhook: {
-        domain: configService.get('URL_WEBHOOK_TELE'),
-        port: configService.get('PORT'),
-        path: '/telebot',
-      },
     });
   }
   private getRandomNumberInRange(a: number, b: number): number {
