@@ -25,6 +25,7 @@ export class TelebotController {
   @Post()
   @HttpCode(HttpStatus.OK)
   handleWebhook(@Body() update: any) {
+    console.log(update);
   }
   @Post('/create')
   @UseGuards(RolesGuard)

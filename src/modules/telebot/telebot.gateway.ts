@@ -105,7 +105,7 @@ export class TeleBotGateWay {
         break;
       }
       case '/start': {
-        this.handleStart(tele_user_id, tMess.from.first_name);
+        await this.handleStart(tele_user_id, tMess.from.first_name);
         break;
       }
       case '/login': {
