@@ -24,7 +24,6 @@ export class TelebotController {
   constructor(private readonly telebotService: TelebotService) {}
   @Post()
   async handleWebhook(@Body() update: any) {
-    await this.telebotService.receiveEvent(update);
     return;
   }
   @Post('/create')
