@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ConfigService } from '@nestjs/config';
 import { TelebotService } from './telebot.service';
-import * as TelegramBot from 'node-telegram-bot-api';
 import { CharactorCustomeModule } from 'src/helpers/charactor.help';
 import { ValidatorCustomModule } from 'src/helpers/validator.help';
 import { UserService } from '../user/user.service';
@@ -14,6 +13,7 @@ import { HashCustomeModule } from 'src/helpers/hash.help';
 import { MessageService } from '../message/message.service';
 import { Message } from '../message/entities/message.entity';
 import OpenAI from 'openai';
+import { Telegraf } from 'telegraf';
 interface ITMess {
   from: {
     id: number;
@@ -23,27 +23,26 @@ interface ITMess {
   date: number;
 }
 export class TeleBotGateWay {
-  private bot: TelegramBot;
-  private handleActionTeleBot: HandleActionTeleBot;
+  private readonly bot$: Telegraf;
+  private readonly handleActionTeleBot: HandleActionTeleBot;
   constructor(
-    private teleBotService: TelebotService,
-    private configService: ConfigService,
-    private userService: UserService,
-    private messageService: MessageService,
-    private gpt:OpenAI,
+    private readonly teleBotService: TelebotService,
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
+    private readonly messageService: MessageService,
+    private readonly gpt: OpenAI,
   ) {
     const token = configService.get('TOKEN_TELEGRAM');
-    this.bot = new TelegramBot(token, { polling: true });
+    this.bot$ = new Telegraf(token);
     this.handleActionTeleBot = new HandleActionTeleBot(
-      this.bot,
+      this.bot$,
       userService,
       teleBotService,
       messageService,
     );
-    this.bot.on(
-      'message',
-      async (message: TelegramBot.Message) => await this.handleMessage(message),
-    );
+    this.bot$.on('text', async (ctx) => await this.handleMessage(ctx.message));
+    this.bot$.telegram.setWebhook(`${configService.get('URL_WEBHOOK_TELE')}`);
+    this.bot$.launch();
   }
   private getRandomNumberInRange(a: number, b: number): number {
     const min = Math.min(a, b);
@@ -57,22 +56,22 @@ export class TeleBotGateWay {
     if (teleBot.length > 1) {
       chosen = this.getRandomNumberInRange(0, teleBot.length);
     }
-    await this.bot.sendMessage(
+    await this.bot$.telegram.sendMessage(
       msg_id,
       `Hello ${name_client}😎\n${teleBot[chosen].content}`,
     );
     if (teleBot[chosen].link_pic && teleBot[chosen].link_pic.length > 0)
-      await this.bot.sendPhoto(msg_id, teleBot[chosen].link_pic);
+      await this.bot$.telegram.sendPhoto(msg_id, teleBot[chosen].link_pic);
   }
   private async handleHelp(msg_id: number, name_client: string) {
     const teleBot: Telebot = await this.teleBotService.findOneByAcronym('help');
-    await this.bot.sendMessage(
+    await this.bot$.telegram.sendMessage(
       msg_id,
       `Hello ${name_client}😎\n${teleBot.content}`,
     );
-    await this.bot.sendPhoto(msg_id, teleBot.link_pic);
+    await this.bot$.telegram.sendPhoto(msg_id, teleBot.link_pic);
   }
-  public async handleMessage(msg: TelegramBot.Message) {
+  public async handleMessage(msg: any) {
     const teleId: number = msg.chat.id;
     const charAt0: string = msg.text.charAt(0);
     if (charAt0 === '/') {
@@ -134,14 +133,14 @@ export class TeleBotGateWay {
           messages: [{ role: 'user', content: mess }],
           model: 'gpt-3.5-turbo-16k-0613',
         });
-        await this.bot.sendMessage(
+        await this.bot$.telegram.sendMessage(
           tele_user_id,
           `${chatCompletion.choices[0].message.role}: ${chatCompletion.choices[0].message.content}`,
         );
         break;
       }
       default: {
-        await this.bot.sendMessage(
+        await this.bot$.telegram.sendMessage(
           tele_user_id,
           '⚠️Câu lệnh của bạn không hợp lệ',
         );
@@ -155,9 +154,9 @@ export class TeleBotGateWay {
     message.admin = messend.userSend;
     message.content = messend.message;
     await this.messageService.save(message);
-    await this.bot
+    await this.bot$.telegram
       .sendMessage(messend.id, messend.message)
-      .then(async (value: TelegramBot.Message) => {
+      .then(async () => {
         message.sent = true;
         await this.messageService.save(message);
       })
@@ -166,10 +165,10 @@ export class TeleBotGateWay {
 }
 export class HandleActionTeleBot {
   constructor(
-    private bot: TelegramBot,
-    private userService: UserService,
-    private teleBotService: TelebotService,
-    private messageService: MessageService,
+    private readonly bot: Telegraf,
+    private readonly userService: UserService,
+    private readonly teleBotService: TelebotService,
+    private readonly messageService: MessageService,
   ) {}
   public async callBackMessage(user: Admin) {
     const messages: Message[] = await this.messageService.findByUserSentYet(
@@ -178,7 +177,7 @@ export class HandleActionTeleBot {
     if (messages.length === 0) return;
     const idTele: number = parseInt(user.teleID);
     for (const message of messages) {
-      await this.bot.sendMessage(
+      await this.bot.telegram.sendMessage(
         idTele,
         `🔔Thông báo bạn chưa nhận📢\n${message.content}`,
       );
@@ -190,7 +189,7 @@ export class HandleActionTeleBot {
   public async login(tele_user_id: number, mess: string) {
     const userT: Admin = await this.userService.findByTeleID(`${tele_user_id}`);
     if (userT) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         '⚠️Thiết bị này đã đăng nhập vào một tài khoản khác.Hãy nhập lệnh /logout để đăng xuất trước khi đăng nhập tài khoản mới',
       );
@@ -198,14 +197,14 @@ export class HandleActionTeleBot {
     }
     const account: string[] = mess.split(' ');
     if (account.length < 2) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Vui lòng nhập mật khẩu. Thực hiện lại cú pháp: /login sodienthoai matkhau`,
       );
       return;
     }
     if (!ValidatorCustomModule.isPhoneNumber(account[0])) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         '⚠️Số điện thoại không hợp lệ. Vui lòng nhập đúng cú pháp: /login sodienthoai matkhau',
       );
@@ -213,14 +212,14 @@ export class HandleActionTeleBot {
     }
     const user: Admin = await this.userService.findByPhoneNumber(account[0]);
     if (!user) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Số điện thoại ${mess} chưa có trong hồ sơ của bênh viện.`,
       );
       return;
     }
     if (!HashCustomeModule.compare(account[1], user.password)) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Mật khẩu không chính xác. Vui lòng đăng nhập lại`,
       );
@@ -228,14 +227,14 @@ export class HandleActionTeleBot {
     }
     if (user.teleID && user.teleID.length > 0) {
       const teleID_old = parseInt(user.teleID);
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         teleID_old,
         `⚠️Tài khoản đã đăng nhập vào thiết bị khác đăng xuất khỏi thiết bị của bạn vào lúc ${new Date()}.`,
       );
     }
     user.teleID = `${tele_user_id}`;
     await this.userService.save(user);
-    this.bot
+    this.bot.telegram
       .sendMessage(
         tele_user_id,
         `✅Đăng nhập thành công.\n🫴Chào mừng ${user.firstName} ${user.lastName}.`,
@@ -247,45 +246,45 @@ export class HandleActionTeleBot {
   public async info(tele_user_id: number) {
     const user: Admin = await this.userService.findByTeleID(`${tele_user_id}`);
     if (!user) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
       );
     } else {
-      this.bot.sendMessage(tele_user_id, user.userToString());
+      this.bot.telegram.sendMessage(tele_user_id, user.userToString());
     }
   }
   public async logout(tele_user_id: number) {
     const user: Admin = await this.userService.findByTeleID(`${tele_user_id}`);
     if (!user) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `📤Tài khoản này đã đăng xuất.\nVui lòng đăng nhập hệ thống bệnh viện`,
       );
     } else {
       user.teleID = '';
       await this.userService.save(user);
-      this.bot.sendMessage(tele_user_id, '✅Đăng xuất thành công📤');
+      this.bot.telegram.sendMessage(tele_user_id, '✅Đăng xuất thành công📤');
     }
   }
   public async addTelebot(tele_user_id: number, mess: string) {
     const userT: Admin = await this.userService.findByTeleID(`${tele_user_id}`);
     if (!userT) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
       );
       return;
     }
     if (!(userT.role === Role.admin || userT.role === Role.master)) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Tài khoản này không có quyền sử dụng lệnh này.`,
       );
       return;
     }
     if (mess.charAt(0) !== '{' || mess.charAt(mess.length - 1) !== '}') {
-      await this.bot.sendMessage(
+      await this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Lỗi định dạng. Để thêm telebot phải đúng định dạng như sau: {title,acronym,content,image}`,
       );
@@ -293,7 +292,7 @@ export class HandleActionTeleBot {
     }
     const value = mess.slice(1, mess.length - 1).split(',');
     if (value.length !== 4) {
-      await this.bot.sendMessage(
+      await this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Lỗi nhập liệu. Phải đầy đủ title,acronym,content trong {title,acronym,content,image}.\nNếu không có image thì dữ liệu sẽ có dạng {title,acronym,content,}`,
       );
@@ -301,7 +300,7 @@ export class HandleActionTeleBot {
     }
     console.log(value);
     if (!(value[0] && value[1] && value[2])) {
-      await this.bot.sendMessage(
+      await this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Lỗi nhập liệu. Phải đầy đủ title,acronym,content trong {title,acronym,content,image}`,
       );
@@ -312,7 +311,7 @@ export class HandleActionTeleBot {
       value[3].length > 0 &&
       ValidatorCustomModule.isUrl(value[3]) === false
     ) {
-      await this.bot.sendMessage(
+      await this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Lỗi định dạng.Thuộc tính image trong {title,acronym,content,image} không hợp lệ`,
       );
@@ -325,7 +324,7 @@ export class HandleActionTeleBot {
     createTeleBotDto.link_pic = value[3];
     const teleBotNew: Telebot =
       await this.teleBotService.create(createTeleBotDto);
-    await this.bot.sendMessage(
+    await this.bot.telegram.sendMessage(
       tele_user_id,
       `✅Đã tạo thành công một trường.\n${teleBotNew.toString()}`,
     );
@@ -333,14 +332,14 @@ export class HandleActionTeleBot {
   public async getTeleBots(tele_user_id: number) {
     const userT: Admin = await this.userService.findByTeleID(`${tele_user_id}`);
     if (!userT) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Tài khoản này chưa đăng nhập hệ thống bệnh viện hoặc đã được đăng nhập ở thiết bị khác`,
       );
       return;
     }
     if (!(userT.role === Role.admin || userT.role === Role.master)) {
-      this.bot.sendMessage(
+      this.bot.telegram.sendMessage(
         tele_user_id,
         `⚠️Tài khoản này không có quyền sử dụng lệnh này.`,
       );
@@ -350,7 +349,7 @@ export class HandleActionTeleBot {
     const res: string = telebots
       .map((telebot: Telebot) => telebot.toStringObject())
       .join(',\n');
-    await this.bot.sendMessage(
+    await this.bot.telegram.sendMessage(
       tele_user_id,
       `✅Thông tin các telebot hiện có\n${res}`,
     );

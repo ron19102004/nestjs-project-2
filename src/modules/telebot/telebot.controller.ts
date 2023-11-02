@@ -21,7 +21,12 @@ import { AskGptDto } from './dto/ask-gpt.dto';
 @Controller('telebot')
 export class TelebotController {
   constructor(private readonly telebotService: TelebotService) {}
-  @Post('/')
+  @Post()
+  handleWebhook(@Body() update: any) {
+    console.log('Received update:', update);
+    return 'Received update';
+  }
+  @Post('/create')
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @Roles(Role.master)

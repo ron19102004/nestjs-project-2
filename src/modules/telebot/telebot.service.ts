@@ -14,8 +14,8 @@ import { MessageService } from '../message/message.service';
 import OpenAI from 'openai';
 @Injectable()
 export class TelebotService {
-  private telebotGateway: TeleBotGateWay;
-  private gpt: OpenAI;
+  private readonly telebotGateway: TeleBotGateWay;
+  private readonly gpt: OpenAI;
   constructor(
     private configService: ConfigService,
     private userService: UserService,

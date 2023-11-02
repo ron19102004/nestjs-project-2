@@ -17,4 +17,5 @@ export default () => ({
   TOKEN_TELEGRAM: process.env.TOKEN_TELEGRAM,
   URL_FRONTEND: process.env.URL_FRONTEND,
   API_KEY: process.env.API_KEY,
+  URL_WEBHOOK_TELE: process.env.URL_WEBHOOK_TELE
 });
