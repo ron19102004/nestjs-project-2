@@ -13,6 +13,7 @@ import { Role } from '../user/interfaces/enum';
 import { HashCustomeModule } from 'src/helpers/hash.help';
 import { MessageService } from '../message/message.service';
 import { Message } from '../message/entities/message.entity';
+import OpenAI from 'openai';
 interface ITMess {
   from: {
     id: number;
@@ -29,6 +30,7 @@ export class TeleBotGateWay {
     private configService: ConfigService,
     private userService: UserService,
     private messageService: MessageService,
+    private gpt:OpenAI,
   ) {
     const token = configService.get('TOKEN_TELEGRAM');
     this.bot = new TelegramBot(token, { polling: true });
@@ -125,6 +127,17 @@ export class TeleBotGateWay {
       }
       case '/show-telebots': {
         await this.handleActionTeleBot.getTeleBots(tele_user_id);
+        break;
+      }
+      case '/gpt': {
+        const chatCompletion = await this.gpt.chat.completions.create({
+          messages: [{ role: 'user', content: mess }],
+          model: 'gpt-3.5-turbo-16k-0613',
+        });
+        await this.bot.sendMessage(
+          tele_user_id,
+          `${chatCompletion.choices[0].message.role}: ${chatCompletion.choices[0].message.content}`,
+        );
         break;
       }
       default: {

@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Response,
   UseGuards,
@@ -26,6 +28,7 @@ export class FeedbackController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async create(@Response() req, @Body() createFeedbackDto: CreateFeedbackDto) {
     return await this.feedbackService.create(req.payload.id, createFeedbackDto);
   }

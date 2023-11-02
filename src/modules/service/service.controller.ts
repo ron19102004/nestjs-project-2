@@ -9,6 +9,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -28,6 +30,7 @@ export class ServiceController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async create(@Body() createServiceDto: CreateServiceDto) {
     return await this.serviceService.create(createServiceDto);
   }

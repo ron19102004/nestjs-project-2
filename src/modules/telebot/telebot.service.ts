@@ -11,21 +11,34 @@ import { CreateMessageDto } from './dto/create-message.dto';
 import { Admin } from '../user/entities/admin.entity';
 import { ResponseCustomModule } from 'src/helpers/response.help';
 import { MessageService } from '../message/message.service';
+import OpenAI from 'openai';
 @Injectable()
 export class TelebotService {
   private telebotGateway: TeleBotGateWay;
+  private gpt: OpenAI;
   constructor(
     private configService: ConfigService,
     private userService: UserService,
     private messageService: MessageService,
     @InjectRepository(Telebot) private repository: Repository<Telebot>,
   ) {
+    this.gpt = new OpenAI({
+      apiKey: configService.get('API_KEY'),
+    });
     this.telebotGateway = new TeleBotGateWay(
       this,
       configService,
       userService,
       messageService,
+      this.gpt,
     );
+  }
+  public async askGpt(question: string) {
+    const chatCompletion = await this.gpt.chat.completions.create({
+      messages: [{ role: 'user', content: question }],
+      model: 'gpt-3.5-turbo-16k-0613',
+    });
+    return chatCompletion.choices[0].message;
   }
   public getTelebotGateway(): TeleBotGateWay {
     return this.telebotGateway;
@@ -72,7 +85,7 @@ export class TelebotService {
       },
     });
   }
-  async sendMessageByPhonenumber(
+  public async sendMessageByPhonenumber(
     admin: IAdminSendMessage | null,
     createMessageDto: CreateMessageDto,
   ) {

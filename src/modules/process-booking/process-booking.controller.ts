@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -28,6 +30,7 @@ export class ProcessBookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async create(@Body() createProcessBookingDto: CreateProcessBookingDto) {
     return await this.processBookingService.create(createProcessBookingDto);
   }
@@ -37,6 +40,7 @@ export class ProcessBookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async findManyByIdBookingForUser(
     @Param('id') id: number,
     @Param('bookingId') bookingId: number,
@@ -56,6 +60,7 @@ export class ProcessBookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async findManyByIdBookingForAdmin(
     @Param('id') id: number,
     @Param('bookingId') bookingId: number,
@@ -75,6 +80,7 @@ export class ProcessBookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async findAllByIdConditionForUser(
     @Param('id') id: number,
     @Param('finished') finished: boolean,
@@ -96,6 +102,7 @@ export class ProcessBookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async findAllByIdConditionForAdmin(
     @Param('id') id: number,
     @Param('finished') finished: boolean,
@@ -115,6 +122,7 @@ export class ProcessBookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async finish(
     @Param('id') id: number,
     @Param('processBookingId') processBookingId: number,

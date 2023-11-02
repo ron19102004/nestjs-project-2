@@ -9,6 +9,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { DepartmentService } from './department.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -27,6 +29,7 @@ export class DepartmentController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async create(@Body() createDepartmentDto: CreateDepartmentDto) {
     return await this.departmentService.create(createDepartmentDto);
   }

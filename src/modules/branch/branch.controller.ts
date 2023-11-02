@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, HttpStatus, HttpCode } from '@nestjs/common';
 import { BranchService } from './branch.service';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -18,6 +18,7 @@ export class BranchController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async create(@Body() createBranchDto: CreateBranchDto) {
     return await this.branchService.create(createBranchDto);
   }

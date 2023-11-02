@@ -58,7 +58,7 @@ export class BookingAnalyticController {
       year,
     );
   }
-  @Get('/adminId=:id/monthCurrent=:monthCur&monthPrevious=:monthPre&year=:year')
+  @Get('/adminId=:id/monthF=:monthf&monthS=:months&yearF=:yearf&yearS=:years')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master)
   @UseGuards(RolesGuard)
@@ -66,46 +66,57 @@ export class BookingAnalyticController {
   @ApiBearerAuth()
   async compareMonth(
     @Param('id') id: number,
-    @Param('monthCur') monthCurrent: number,
-    @Param('monthPre') monthPrevious: number,
-    @Param('year') year: number,
+    @Param('monthf') monthF: string,
+    @Param('months') monthS: string,
+    @Param('years') years: string,
+    @Param('yearf') yearf: string,
   ) {
-    // if (
-    //   !ValidatorCustomModule.isNumber(monthCurrent) &&
-    //   !ValidatorCustomModule.isNumber(year) &&
-    //   !ValidatorCustomModule.isNumber(monthPrevious)
-    // )
-    //   return ResponseCustomModule.error(
-    //     'Giá trị của tháng và năm không hợp lệ',
-    //     400,
-    //   );
-    // if (!ValidatorCustomModule.isNumber(monthPrevious))
-    //   return ResponseCustomModule.error(
-    //     'Giá trị của tháng trước không hợp lệ',
-    //     400,
-    //   );
-    // if (!ValidatorCustomModule.isNumber(monthCurrent))
-    //   return ResponseCustomModule.error(
-    //     'Giá trị của tháng hiện tại không hợp lệ',
-    //     400,
-    //   );
-    // if (!ValidatorCustomModule.isNumber(year))
-    //   return ResponseCustomModule.error('Giá trị của năm không hợp lệ', 400);
-    // if (parseInt(monthPrevious) > 12 || parseInt(monthPrevious) < 1)
-    //   return ResponseCustomModule.error(
-    //     'Giá trị của tháng trước không hợp lệ',
-    //     400,
-    //   );
-    // if (parseInt(monthCurrent) > 12 || parseInt(monthCurrent) < 1)
-    //   return ResponseCustomModule.error(
-    //     'Giá trị của tháng hiện tại không hợp lệ',
-    //     400,
-    //   );
+    if (
+      !ValidatorCustomModule.isNumber(monthF) &&
+      !ValidatorCustomModule.isNumber(years) &&
+      !ValidatorCustomModule.isNumber(monthS) &&
+      !ValidatorCustomModule.isNumber(yearf)
+    )
+      return ResponseCustomModule.error(
+        'Giá trị của tháng và năm không hợp lệ',
+        400,
+      );
+    if (!ValidatorCustomModule.isNumber(monthF))
+      return ResponseCustomModule.error(
+        'Giá trị của tháng thứ 1 không hợp lệ',
+        400,
+      );
+    if (!ValidatorCustomModule.isNumber(monthS))
+      return ResponseCustomModule.error(
+        'Giá trị của tháng thứ 2 không hợp lệ',
+        400,
+      );
+    if (!ValidatorCustomModule.isNumber(yearf))
+      return ResponseCustomModule.error(
+        'Giá trị của năm đầu không hợp lệ',
+        400,
+      );
+    if (!ValidatorCustomModule.isNumber(years))
+      return ResponseCustomModule.error(
+        'Giá trị của năm đầu không hợp lệ',
+        400,
+      );
+    if (parseInt(monthF) > 12 || parseInt(monthF) < 1)
+      return ResponseCustomModule.error(
+        'Giá trị của tháng đầu không hợp lệ',
+        400,
+      );
+    if (parseInt(monthS) > 12 || parseInt(monthS) < 1)
+      return ResponseCustomModule.error(
+        'Giá trị của tháng sau không hợp lệ',
+        400,
+      );
     return await this.bookingAnalyticService.compareTwoMonth(
       id,
-      monthPrevious + '',
-      monthCurrent + '',
-      year + '',
+      monthF,
+      monthS,
+      yearf,
+      years,
     );
   }
 }

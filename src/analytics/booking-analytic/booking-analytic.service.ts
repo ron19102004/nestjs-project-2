@@ -170,33 +170,34 @@ export class BookingAnalyticService {
   }
   async compareTwoMonth(
     adminId: number,
-    monthPrevious: string,
-    monthCurrent: string,
-    year: string,
+    monthFirst: string,
+    monthSecond: string,
+    yearFirst: string,
+    yearSecond: string,
   ) {
-    const quantityBookingWithinMonthCur = await this.quantityBookingWithinMonth(
+    const quantityBookingWithinMonth1 = await this.quantityBookingWithinMonth(
       adminId,
-      monthCurrent,
-      year,
+      monthFirst,
+      yearFirst,
     );
-    const quantityBookingWithinMonthPre = await this.quantityBookingWithinMonth(
+    const quantityBookingWithinMonth2 = await this.quantityBookingWithinMonth(
       adminId,
-      monthPrevious,
-      year,
+      monthSecond,
+      yearSecond,
     );
-    const monthNowMinusMonthPre: number[] =
-      quantityBookingWithinMonthCur.data.data.map(
+    const month1MinusMonth2: number[] =
+      quantityBookingWithinMonth1.data.data.map(
         (value: number, index: number) =>
-          value - quantityBookingWithinMonthPre.data.data[index],
+          value - quantityBookingWithinMonth2.data.data[index],
       );
     let total: number = 0;
-    for (const value of monthNowMinusMonthPre) {
-      total += value;
+    for (const value of month1MinusMonth2) {
+      total += value < 0 ? -value : value;
     }
-    const quantityAcceptedYet: number = monthNowMinusMonthPre[0];
-    const quantityAccepted: number = monthNowMinusMonthPre[1];
-    const quantityRejected: number = monthNowMinusMonthPre[2];
-    const quantityFinished: number = monthNowMinusMonthPre[3];
+    const quantityAcceptedYet: number = month1MinusMonth2[0];
+    const quantityAccepted: number = month1MinusMonth2[1];
+    const quantityRejected: number = month1MinusMonth2[2];
+    const quantityFinished: number = month1MinusMonth2[3];
     let percentAcceptedYet: number = parseFloat(
       ((quantityAcceptedYet * 100) / total).toFixed(2),
     );
@@ -206,8 +207,9 @@ export class BookingAnalyticService {
     let percentRejected: number = parseFloat(
       ((quantityRejected * 100) / total).toFixed(2),
     );
-    let percentFinished: number =
-      100.0 - percentAcceptedYet - percentAccepted - percentRejected;
+    let percentFinished: number = parseFloat(
+      ((quantityFinished * 100) / total).toFixed(2),
+    );
     if (
       Number.isNaN(percentAccepted) ||
       Number.isNaN(percentFinished) ||
@@ -233,11 +235,11 @@ export class BookingAnalyticService {
       quantityFinished,
     ];
     const data = {
-      lable: quantityBookingWithinMonthCur.data.lable,
-      dataMonthCurrent: quantityBookingWithinMonthCur.data,
-      dataMonthPrevious: quantityBookingWithinMonthPre.data,
-      percentCompare: percentCompare,
+      label: quantityBookingWithinMonth1.data.label,
       quantityCompare: quantityCompare,
+      dataMonthFirst: quantityBookingWithinMonth1.data,
+      dataMonthSecond: quantityBookingWithinMonth2.data,
+      percentCompare: percentCompare,
     };
     return ResponseCustomModule.ok(data, 'Thống kê thành công');
   }

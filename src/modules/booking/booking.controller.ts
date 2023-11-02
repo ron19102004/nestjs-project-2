@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Request,
@@ -33,6 +35,7 @@ export class BookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async createForAdmin(@Body() createBookingDto: CreateBookingDto) {
     return await this.bookingService.createForAdmin(createBookingDto);
   }
@@ -41,6 +44,7 @@ export class BookingController {
   @Roles(Role.admin, Role.master, Role.user)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   async createForUser(@Body() createBookingDto: CreateBookingDto) {
     return await this.bookingService.createForUser(createBookingDto);
@@ -51,6 +55,7 @@ export class BookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async actionForAdmin(
     @Request() req,
     @Param('idBooking') idBooking: number,
@@ -95,6 +100,7 @@ export class BookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async showAllBookingForUser(@Param('id') id: number) {
     const booking: Booking[] =
       await this.bookingService.showAllBookingForUser(id);
@@ -110,6 +116,7 @@ export class BookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async showAllBookingForAdmin(
     @Param('id') id: number,
     @Body() showAllForAdminDto: ShowAllForAdminDto,
@@ -130,6 +137,7 @@ export class BookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async showAllBookingForAdminNotPagation(@Param('id') id: number) {
     const booking: Booking[] =
       await this.bookingService.showAllBookingForAdminNotSkipTake(id);
@@ -145,6 +153,7 @@ export class BookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async findManyWithConditionsForAdmin(
     @Param('id') id: number,
     @Param('accepted') accepted: boolean,
@@ -170,6 +179,7 @@ export class BookingController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async findManyWithConditionsForUser(
     @Param('id') id: number,
     @Param('accepted') accepted: boolean,

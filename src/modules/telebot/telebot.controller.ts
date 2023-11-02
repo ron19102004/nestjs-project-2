@@ -16,6 +16,7 @@ import { Role } from '../user/interfaces/enum';
 import { RolesGuard } from 'src/guards/role.guard';
 import { AuthsGuard } from 'src/auths/auths.guard';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { AskGptDto } from './dto/ask-gpt.dto';
 @ApiTags('telebot')
 @Controller('telebot')
 export class TelebotController {
@@ -24,6 +25,7 @@ export class TelebotController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @Roles(Role.master)
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   public async createTelebot(@Body() createTeleBotDto: CreateTeleBotDto) {
     return createTeleBotDto;
@@ -48,5 +50,15 @@ export class TelebotController {
       },
       createMessageDto,
     );
+  }
+  @Post('/gpt')
+  @HttpCode(HttpStatus.OK)
+  public async askGPT(@Body() askGptDto: AskGptDto) {
+    const res = await this.telebotService.askGpt(askGptDto.question);
+    return {
+      role: res.role,
+      question: askGptDto.question,
+      reply: res.content,
+    };
   }
 }

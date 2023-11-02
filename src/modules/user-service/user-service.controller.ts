@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { UserServiceService } from './user-service.service';
 import { CreateUserServiceDto } from './dto/create-user-service.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -19,22 +19,26 @@ export class UserServiceController {
   @Roles(Role.master)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
+  @HttpCode(HttpStatus.OK)
   async create(@Body() createUserServiceDto: CreateUserServiceDto) {
     return await this.userServiceService.create(createUserServiceDto);
   }
   @Get('/admin/id')
+  @HttpCode(HttpStatus.OK)
   async findByIdAdmin(@Param('id') id: number) {
     const userService: UserService[] =
       await this.userServiceService.findByIdAdmin(id);
     return ResponseCustomModule.ok(userService, 'Truy xuất thành công');
   }
   @Get('/admin/:email')
+  @HttpCode(HttpStatus.OK)
   async findByEmailAdmin(@Param('email') email: string) {
     const userService: UserService[] =
       await this.userServiceService.findByEmailAdmin(email);
     return ResponseCustomModule.ok(userService, 'Truy xuất thành công');
   }
   @Get('/service/:id')
+  @HttpCode(HttpStatus.OK)
   async findByIdService(@Param('id') id: number) {
     const userService: UserService[] =
       await this.userServiceService.findByIdService(id);
