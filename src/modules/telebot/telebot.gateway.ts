@@ -44,7 +44,7 @@ export class TeleBotGateWay {
     this.bot$.telegram.setWebhook(`${configService.get('URL_WEBHOOK_TELE')}`);
     this.bot$.launch();
   }
-  public async receiveEvent(message:any){
+  public async receiveEvent(message: any) {
     await this.handleMessage(message);
   }
   private getRandomNumberInRange(a: number, b: number): number {

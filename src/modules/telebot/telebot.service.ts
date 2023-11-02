@@ -34,7 +34,7 @@ export class TelebotService {
     );
   }
   public async receiveEvent(event: any) {
-    await this.telebotGateway.receiveEvent(event);
+    await this.telebotGateway.receiveEvent(event.message);
   }
   public async askGpt(question: string) {
     const chatCompletion = await this.gpt.chat.completions.create({
