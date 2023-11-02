@@ -33,7 +33,6 @@
     "class-validator": "^0.14.0",
     "dotenv": "^16.3.1",
     "jest": "^29.5.0",
-    "node-telegram-bot-api": "^0.63.0",
     "openai": "^4.14.2",
     "pg": "^8.11.3",
     "pm2": "^5.3.0",

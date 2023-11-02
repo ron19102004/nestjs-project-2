@@ -23,7 +23,7 @@ interface ITMess {
   date: number;
 }
 export class TeleBotGateWay {
-  private readonly bot$: Telegraf;
+  public readonly bot$: Telegraf;
   private readonly handleActionTeleBot: HandleActionTeleBot;
   constructor(
     private readonly teleBotService: TelebotService,
@@ -40,9 +40,15 @@ export class TeleBotGateWay {
       teleBotService,
       messageService,
     );
-    this.bot$.on('text', async (ctx) => await this.handleMessage(ctx.message));
-    // this.bot$.telegram.setWebhook(`${configService.get('URL_WEBHOOK_TELE')}`);
-    this.bot$.launch();
+    // this.bot$.on('text', async (ctx) => await this.handleMessage(ctx.message));
+    this.bot$.launch({
+      dropPendingUpdates: false,
+      webhook: {
+        domain: configService.get('URL_WEBHOOK_TELE'),
+        port: configService.get('PORT'),
+        path: '/telebot',
+      },
+    });
   }
   private getRandomNumberInRange(a: number, b: number): number {
     const min = Math.min(a, b);
