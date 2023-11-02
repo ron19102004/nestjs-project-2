@@ -40,7 +40,7 @@ export class TeleBotGateWay {
       teleBotService,
       messageService,
     );
-    // this.bot$.on('text', async (ctx) => await this.handleMessage(ctx.message));
+    this.bot$.on('text', async (ctx) => await this.handleMessage(ctx.message));
     this.bot$.launch({
       dropPendingUpdates: false,
       webhook: {
