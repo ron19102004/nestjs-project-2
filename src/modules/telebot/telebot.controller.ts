@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 import {
   Body,
@@ -22,9 +23,8 @@ import { AskGptDto } from './dto/ask-gpt.dto';
 export class TelebotController {
   constructor(private readonly telebotService: TelebotService) {}
   @Post()
+  @HttpCode(HttpStatus.OK)
   handleWebhook(@Body() update: any) {
-    console.log('Received update:', update);
-    return 'Received update';
   }
   @Post('/create')
   @UseGuards(RolesGuard)
