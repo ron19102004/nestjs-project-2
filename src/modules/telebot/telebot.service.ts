@@ -33,6 +33,9 @@ export class TelebotService {
       this.gpt,
     );
   }
+  public async receiveEvent(event: any) {
+    await this.telebotGateway.receiveEvent(event);
+  }
   public async askGpt(question: string) {
     const chatCompletion = await this.gpt.chat.completions.create({
       messages: [{ role: 'user', content: question }],

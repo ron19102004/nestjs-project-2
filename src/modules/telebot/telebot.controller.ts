@@ -23,8 +23,8 @@ import { AskGptDto } from './dto/ask-gpt.dto';
 export class TelebotController {
   constructor(private readonly telebotService: TelebotService) {}
   @Post()
-  handleWebhook(@Body() update: any) {
-    console.log(update);
+  async handleWebhook(@Body() update: any) {
+    await this.telebotService.receiveEvent(update);
     return;
   }
   @Post('/create')

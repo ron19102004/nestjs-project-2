@@ -40,9 +40,12 @@ export class TeleBotGateWay {
       teleBotService,
       messageService,
     );
-    this.bot$.on('text', async (ctx) => await this.handleMessage(ctx.message));
+    // this.bot$.on('text', async (ctx) => await this.handleMessage(ctx.message));
     this.bot$.telegram.setWebhook(`${configService.get('URL_WEBHOOK_TELE')}`);
     this.bot$.launch();
+  }
+  public async receiveEvent(message:any){
+    await this.handleMessage(message);
   }
   private getRandomNumberInRange(a: number, b: number): number {
     const min = Math.min(a, b);
