@@ -4,6 +4,10 @@ export interface ICharactorModule {
   charFirst(str: string): string;
 }
 export class CharactorModule implements ICharactorModule {
+  private static INSTANCE: CharactorModule;
+  public static getInstance(): CharactorModule {
+    return this.INSTANCE ? this.INSTANCE : new CharactorModule();
+  }
   charFirst(str: string): string {
     let res: string = '';
     for (let i = 0; i < str.length; i++) {
@@ -13,4 +17,5 @@ export class CharactorModule implements ICharactorModule {
     return res;
   }
 }
-export const CharactorCustomeModule: ICharactorModule = new CharactorModule();
+export const CharactorCustomeModule: ICharactorModule =
+  CharactorModule.getInstance();

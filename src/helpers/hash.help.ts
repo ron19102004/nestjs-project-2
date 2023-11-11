@@ -5,6 +5,10 @@ interface IHashModule {
   compare(password: string, hashCode: string): boolean;
 }
 class HashModule implements IHashModule {
+  private static INSTANCE:HashModule;
+  public static getInstance():HashModule{
+    return this.INSTANCE ? this.INSTANCE : new HashModule();
+  }
   constructor() {}
   compare = (password: string, hashCode: string): boolean => {    
     return bcrypt.compareSync(password, hashCode);
@@ -14,4 +18,4 @@ class HashModule implements IHashModule {
     return await bcrypt.hash(pwd, salt);
   };
 }
-export const HashCustomeModule: IHashModule = new HashModule();
+export const HashCustomeModule: IHashModule = HashModule.getInstance();

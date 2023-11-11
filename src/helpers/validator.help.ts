@@ -9,6 +9,10 @@ export interface IValidatorModule {
   isNumber(number: string): boolean;
 }
 export class ValidatorModule implements IValidatorModule {
+  private static INSTANCE: ValidatorModule
+  public static getInstance(): ValidatorModule{
+    return this.INSTANCE ? this.INSTANCE : new ValidatorModule();
+  }
   private regexValidator = {
     email: /[a-zA-Z0-9_-]+@(vku.udn.vn|gmail.com)/,
     phone: /(0|84)[0-9]{9}/,
@@ -38,4 +42,4 @@ export class ValidatorModule implements IValidatorModule {
     return this.regexValidator.date.test(date);
   }
 }
-export const ValidatorCustomModule: IValidatorModule = new ValidatorModule();
+export const ValidatorCustomModule: IValidatorModule = ValidatorModule.getInstance();

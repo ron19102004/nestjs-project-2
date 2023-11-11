@@ -9,12 +9,22 @@ import { Admin } from 'src/modules';
 import { HashCustomeModule } from 'src/helpers/hash.help';
 
 export abstract class SignInStrategy {
+  protected static INSTANCE: SignInStrategy;
+  public static setInstance(instance: SignInStrategy): SignInStrategy {
+    this.INSTANCE = instance;
+    return this.INSTANCE;
+  }
   abstract login(
     signInDto: SignInDto,
     userService: UserService,
   ): Promise<IResObj<{ user: Admin; deviceName: string | null }>>;
 }
 export class SignInByEmailStrategy extends SignInStrategy {
+  public static getInstance(): SignInByEmailStrategy {
+    return this.INSTANCE
+      ? this.INSTANCE
+      : SignInStrategy.setInstance(new SignInByEmailStrategy());
+  }
   async login(
     signInDto: SignInDto,
     userService: UserService,
@@ -27,10 +37,18 @@ export class SignInByEmailStrategy extends SignInStrategy {
     if (!user) return ResponseCustomModule.error('User Not Found', 404);
     if (!HashCustomeModule.compare(signInDto.password, user.password))
       return ResponseCustomModule.error('Password is not valid', 400);
-    return ResponseCustomModule.ok({user:user,deviceName:signInDto.deviceName}, 'Login successful');
+    return ResponseCustomModule.ok(
+      { user: user, deviceName: signInDto.deviceName },
+      'Login successful',
+    );
   }
 }
 export class SignInByPhoneNumberStrategy extends SignInStrategy {
+  public static getInstance(): SignInByPhoneNumberStrategy {
+    return this.INSTANCE
+      ? this.INSTANCE
+      : SignInStrategy.setInstance(new SignInByPhoneNumberStrategy());
+  }
   async login(
     signInDto: SignInDto,
     userService: UserService,
@@ -43,7 +61,10 @@ export class SignInByPhoneNumberStrategy extends SignInStrategy {
     if (!user) return ResponseCustomModule.error('User Not Found', 404);
     if (!HashCustomeModule.compare(signInDto.password, user.password))
       return ResponseCustomModule.error('Password is not valid', 400);
-    return ResponseCustomModule.ok({user:user,deviceName:signInDto.deviceName}, 'Login successful');
+    return ResponseCustomModule.ok(
+      { user: user, deviceName: signInDto.deviceName },
+      'Login successful',
+    );
   }
 }
 export enum LOGIN_METHOD {
@@ -52,6 +73,6 @@ export enum LOGIN_METHOD {
 }
 //registation record for login methods
 const SignInStrategys: Record<string, SignInStrategy> = {};
-SignInStrategys[LOGIN_METHOD.phone] = new SignInByPhoneNumberStrategy();
-SignInStrategys[LOGIN_METHOD.email] = new SignInByEmailStrategy();
+SignInStrategys[LOGIN_METHOD.phone] = SignInByPhoneNumberStrategy.getInstance();
+SignInStrategys[LOGIN_METHOD.email] = SignInByEmailStrategy.getInstance();
 export { SignInStrategys };

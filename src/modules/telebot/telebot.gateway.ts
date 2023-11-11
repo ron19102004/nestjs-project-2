@@ -27,8 +27,8 @@ export class TeleBotGateWay {
   private readonly handleActionTeleBot: HandleActionTeleBot;
   constructor(
     private readonly teleBotService: TelebotService,
-    private readonly configService: ConfigService,
-    private readonly userService: UserService,
+    configService: ConfigService,
+    userService: UserService,
     private readonly messageService: MessageService,
     private readonly gpt: OpenAI,
   ) {
