@@ -43,13 +43,13 @@ export class BookingAnalyticService {
       }
     }
     let percentAcceptedYet: number = parseFloat(
-      ((quantityAcceptedYet * 100) / bookings.length).toFixed(2),
+      ((quantityAcceptedYet * 100) / bookings.length).toFixed(0),
     );
     let percentAccepted: number = parseFloat(
-      ((quantityAccepted * 100) / bookings.length).toFixed(2),
+      ((quantityAccepted * 100) / bookings.length).toFixed(0),
     );
     let percentRejected: number = parseFloat(
-      ((quantityRejected * 100) / bookings.length).toFixed(2),
+      ((quantityRejected * 100) / bookings.length).toFixed(0),
     );
     let percentFinished: number =
       100.0 - percentAcceptedYet - percentAccepted - percentRejected;
@@ -64,6 +64,9 @@ export class BookingAnalyticService {
         percentFinished =
         percentRejected =
           0;
+    }
+    if (percentFinished < 0) {
+      percentFinished = 0;
     }
     const percent: number[] = [
       percentAcceptedYet,
@@ -148,6 +151,9 @@ export class BookingAnalyticService {
         percentFinished =
         percentRejected =
           0;
+    }
+    if (percentFinished < 0) {
+      percentFinished = 0;
     }
     const percent: number[] = [
       percentAcceptedYet,

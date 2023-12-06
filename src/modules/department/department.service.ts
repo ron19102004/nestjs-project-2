@@ -6,6 +6,7 @@ import { CreateDepartmentDto } from './dto/create-department.dto';
 import { ResponseCustomModule } from 'src/helpers/response.help';
 import { BranchService } from '../branch/branch.service';
 import { Branch } from '../branch/entities/branch.entity';
+import { UpdateDepartmentDto } from './dto/update-department.dto';
 
 @Injectable()
 export class DepartmentService {
@@ -44,5 +45,29 @@ export class DepartmentService {
       .leftJoinAndSelect('departments.branch', 'branch')
       .andWhere('departments.deleted=:deleted', { deleted: false })
       .getMany();
+  }
+  async delete(id: number) {
+    const department: Department = await this.repository.findOne({
+      where: {
+        deleted: false,
+        id: id,
+      },
+    });
+    department.deleted = true;
+    await this.repository.save(department);
+  }
+  async update(updateDepartmentDto: UpdateDepartmentDto) {
+    const department: Department = await this.repository.findOne({
+      where: {
+        deleted: false,
+        id: updateDepartmentDto.id,
+      },
+    });
+    department.description = updateDepartmentDto.description;
+    department.duties = updateDepartmentDto.duties;
+    department.name = updateDepartmentDto.name;
+    department.equipment_system = updateDepartmentDto.equipment_system;
+    department.treatment_techniques = updateDepartmentDto.treatment_techniques;
+    await this.repository.save(department);
   }
 }

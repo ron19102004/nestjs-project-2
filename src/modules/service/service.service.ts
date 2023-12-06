@@ -6,6 +6,7 @@ import { Service } from './entities/service.entity';
 import { Repository } from 'typeorm';
 import { Department } from '../department/entities/department.entity';
 import { ResponseCustomModule } from 'src/helpers/response.help';
+import { UpdateServiceDto } from './dto/update-service.dto';
 
 @Injectable()
 export class ServiceService {
@@ -36,5 +37,24 @@ export class ServiceService {
         deleted: false,
       },
     });
+  }
+  async find() {
+    return await this.repository
+      .createQueryBuilder('services')
+      .leftJoinAndSelect('services.department', 'department')
+      .where('services.deleted=:deleted', { deleted: false })
+      .getMany();
+  }
+  async delete(id: number) {
+    const service: Service = await this.findById(id);
+    service.deleted = true;
+    await this.repository.save(service);
+  }
+  async update(updateDto: UpdateServiceDto) {
+    const service: Service = await this.findById(updateDto.id);
+    service.name = updateDto.name;
+    service.price = updateDto.price;
+    service.description = updateDto.description;
+    await this.repository.save(service);
   }
 }

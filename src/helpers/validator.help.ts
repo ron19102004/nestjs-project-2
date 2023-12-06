@@ -9,19 +9,15 @@ export interface IValidatorModule {
   isNumber(number: string): boolean;
 }
 export class ValidatorModule implements IValidatorModule {
-  private static INSTANCE: ValidatorModule
-  public static getInstance(): ValidatorModule{
-    return this.INSTANCE ? this.INSTANCE : new ValidatorModule();
-  }
   private regexValidator = {
     email: /[a-zA-Z0-9_-]+@(vku.udn.vn|gmail.com)/,
     phone: /(0|84)[0-9]{9}/,
     url: /^(ftp|http|https):\/\/[^ "]+$/,
     date: /^(0[1-9]|1[0-9]|2[0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$/,
-    number:/^-?\d+(\.\d+)?$/
+    number: /^-?\d+(\.\d+)?$/,
   };
   isNumber(number: string): boolean {
-      return this.regexValidator.number.test(number);
+    return this.regexValidator.number.test(number);
   }
   isPhoneNumber(phone: string): boolean {
     return this.regexValidator.phone.test(phone);
@@ -42,4 +38,4 @@ export class ValidatorModule implements IValidatorModule {
     return this.regexValidator.date.test(date);
   }
 }
-export const ValidatorCustomModule: IValidatorModule = ValidatorModule.getInstance();
+export const ValidatorCustomModule: IValidatorModule = new ValidatorModule();

@@ -2,6 +2,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -37,7 +38,7 @@ export class BookingController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   async createForAdmin(@Body() createBookingDto: CreateBookingDto) {
-    return await this.bookingService.createForAdmin(createBookingDto);
+    return await this.bookingService.create(createBookingDto, Role.admin);
   }
   @Post('/user/:id')
   @UseGuards(MyselfGuard)
@@ -47,7 +48,7 @@ export class BookingController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   async createForUser(@Body() createBookingDto: CreateBookingDto) {
-    return await this.bookingService.createForUser(createBookingDto);
+    return await this.bookingService.create(createBookingDto, Role.user);
   }
   @Post('/admin/id=:id&bookingID=:idBooking/action=:action')
   @UseGuards(MyselfGuard)
@@ -110,7 +111,7 @@ export class BookingController {
       'Lấy tất cả hồ sơ lịch hẹn thành công',
     );
   }
-  @Post('/admin/all/:id')
+  @Post('/admin/all/:id/deleted=:deleted')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master)
   @UseGuards(RolesGuard)
@@ -119,11 +120,13 @@ export class BookingController {
   @HttpCode(HttpStatus.OK)
   async showAllBookingForAdmin(
     @Param('id') id: number,
+    @Param('deleted') deleted: boolean,
     @Body() showAllForAdminDto: ShowAllForAdminDto,
   ) {
     const booking: Booking[] = await this.bookingService.showAllBookingForAdmin(
       id,
       showAllForAdminDto,
+      deleted,
     );
     const data: IDataBookingDto[] = this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
@@ -131,16 +134,19 @@ export class BookingController {
       'Lấy tất cả hồ sơ lịch hẹn thành công',
     );
   }
-  @Get('/admin/all/:id')
+  @Get('/admin/all/:id/deleted=:deleted')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  async showAllBookingForAdminNotPagation(@Param('id') id: number) {
+  async showAllBookingForAdminNotPagation(
+    @Param('id') id: number,
+    @Param('deleted') deleted: boolean,
+  ) {
     const booking: Booking[] =
-      await this.bookingService.showAllBookingForAdminNotSkipTake(id);
+      await this.bookingService.showAllBookingForAdminNotSkipTake(id,deleted);
     const data: IDataBookingDto[] = this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
       data,
@@ -197,6 +203,23 @@ export class BookingController {
     return ResponseCustomModule.ok(
       data,
       `Lấy tất cả hồ sơ lịch hẹn thành công theo điều kiện {accepted=${accepted};injected=${injected};finished=${finished}}`,
+    );
+  }
+  @Delete('/admin/adminId=:id&bookingId=:bookingId')
+  @UseGuards(MyselfGuard)
+  @Roles(Role.admin, Role.master)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async remove(
+    @Param('id') id: number,
+    @Param('bookingId') bookingId: number,
+  ) {
+    await this.bookingService.removeByIdBooking(bookingId)
+    return ResponseCustomModule.ok(
+      null,
+      'Xóa thành công',
     );
   }
 }

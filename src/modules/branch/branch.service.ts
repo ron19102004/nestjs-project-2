@@ -31,4 +31,30 @@ export class BranchService {
       },
     });
   }
+  async update(updateBranchDto: UpdateBranchDto) {
+    const branch: Branch = await this.repository.findOne({
+      where: {
+        deleted: false,
+        id: updateBranchDto?.id,
+      },
+    });
+    branch.name = updateBranchDto.name;
+    branch.hotline = updateBranchDto.hotline;
+    branch.description = updateBranchDto.description;
+    branch.email = updateBranchDto.email;
+    branch.src_map = updateBranchDto.src_map;
+    branch.establish_at = updateBranchDto.established_at;
+    branch.address = updateBranchDto.address;
+    await this.repository.save(branch);
+  }
+  async delete(id: number) {
+    const branch: Branch = await this.repository.findOne({
+      where: {
+        deleted: false,
+        id: id,
+      },
+    });
+    branch.deleted = true;
+    await this.repository.save(branch);
+  }
 }

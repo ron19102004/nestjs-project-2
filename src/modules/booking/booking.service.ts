@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { EAction } from './dto/data-resp.dto';
 import { ShowAllForAdminDto } from './dto/show-all-for-ad.dto';
 import { ValidatorCustomModule } from 'src/helpers/validator.help';
+import { Role } from '../user/interfaces/enum';
 
 @Injectable()
 export class BookingService {
@@ -33,8 +34,9 @@ export class BookingService {
   getURL_FRONTEND(): string {
     return this.URL_FRONTEND;
   }
-  async createForAdmin(
+  async create(
     createBookingDto: CreateBookingDto,
+    role: Role,
   ): Promise<IResObj<Booking>> {
     const user: Admin = await this.userService.findById(
       createBookingDto.user_id,
@@ -52,46 +54,7 @@ export class BookingService {
     if (!service)
       return ResponseCustomModule.error('Không tìm thấy dịch vụ', 404);
     const booking: Booking = new Booking();
-    booking.accepted = true;
-    booking.user = user;
-    booking.admin = admin;
-    booking.service = service;
-    booking.timeInit = ValidatorCustomModule.getDate();
-    const bookingNew: Booking = await this.repositoty.save(booking);
-    await this.teleBotService.sendMessageByPhonenumber(
-      {
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        email: admin.email,
-        phone: admin.phoneNumber,
-        address: admin.address,
-      },
-      {
-        phoneNumber: user.phoneNumber,
-        message: `Lịch hẹn ${bookingNew.id}id của ${user.lastName} với ${admin.firstName} ${admin.lastName} đã được tạo thành công. Vui lòng chờ chấp nhập và kiểm tra trên website của chúng tôi: ${this.URL_FRONTEND}`,
-      },
-    );
-    return ResponseCustomModule.ok(bookingNew, 'Thêm hồ sơ thành công');
-  }
-  async createForUser(
-    createBookingDto: CreateBookingDto,
-  ): Promise<IResObj<Booking>> {
-    const user: Admin = await this.userService.findById(
-      createBookingDto.user_id,
-    );
-    if (!user)
-      return ResponseCustomModule.error('Không tìm thấy người dùng', 404);
-    const admin: Admin = await this.userService.findById(
-      createBookingDto.admin_id,
-    );
-    if (!admin)
-      return ResponseCustomModule.error('Không tìm thấy tài khoản admin', 404);
-    const service: Service = await this.serviceService.findById(
-      createBookingDto.user_id,
-    );
-    if (!service)
-      return ResponseCustomModule.error('Không tìm thấy dịch vụ', 404);
-    const booking: Booking = new Booking();
+    if (role !== Role.user) booking.accepted = true;
     booking.user = user;
     booking.admin = admin;
     booking.service = service;
@@ -181,6 +144,7 @@ export class BookingService {
   async showAllBookingForAdmin(
     idAdmin: number,
     showAllForAdminDto: ShowAllForAdminDto,
+    deleted: boolean,
   ) {
     return await this.repositoty
       .createQueryBuilder('booking')
@@ -188,20 +152,20 @@ export class BookingService {
       .leftJoinAndSelect('booking.user', 'user')
       .leftJoinAndSelect('booking.service', 'service')
       .where('booking.admin.id=:id', { id: idAdmin })
-      .andWhere('booking.deleted=:deleted', { deleted: false })
+      .andWhere('booking.deleted=:deleted', { deleted: deleted })
       .orderBy('booking.created_at', 'DESC')
       .skip(showAllForAdminDto.skip ?? 0)
       .take(showAllForAdminDto.take ?? 10)
       .getMany();
   }
-  async showAllBookingForAdminNotSkipTake(idAdmin: number) {
+  async showAllBookingForAdminNotSkipTake(idAdmin: number, deleted: boolean) {
     return await this.repositoty
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.admin', 'admin')
       .leftJoinAndSelect('booking.user', 'user')
       .leftJoinAndSelect('booking.service', 'service')
       .where('booking.admin.id=:id', { id: idAdmin })
-      .andWhere('booking.deleted=:deleted', { deleted: false })
+      .andWhere('booking.deleted=:deleted', { deleted: deleted })
       .orderBy('booking.created_at', 'DESC')
       .getMany();
   }
@@ -253,5 +217,15 @@ export class BookingService {
       .andWhere('booking.deleted=:deleted', { deleted: false })
       .orderBy('booking.created_at', 'ASC')
       .getMany();
+  }
+  async removeByIdBooking(id: number) {
+    const booking: Booking = await this.repositoty.findOne({
+      where: {
+        id: id,
+        deleted: false,
+      },
+    });
+    booking.deleted = true;
+    await this.repositoty.save(booking);
   }
 }

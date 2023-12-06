@@ -18,7 +18,7 @@ export class AuthsGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = this.extractTokenFromHeader(request);    
     if (!token) {
       throw new UnauthorizedException();
     }
@@ -29,9 +29,9 @@ export class AuthsGuard implements CanActivate {
       }>('JWT');
       const payload = await this.jwtService.verifyAsync(token, {
         secret: jwtConfigs.ACCESS_TOKEN_SECRET,
-      });
+      });      
       request['payload'] = payload;
-    } catch (error: any) {
+    } catch (error: any) {      
       throw new UnauthorizedException();
     }
     return true;
