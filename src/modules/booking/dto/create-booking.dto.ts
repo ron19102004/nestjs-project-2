@@ -4,7 +4,7 @@ import { IsNumber, IsString } from 'class-validator';
 export class CreateBookingDto {
   @ApiProperty({ nullable: false })
   @IsNumber()
-  public service_id: number;
+  public user_service_id: number;
   @ApiProperty({ nullable: false })
   @IsNumber()
   public admin_id: number;

@@ -14,6 +14,7 @@ import { AuthsGuard } from './auths.guard';
 import { ResponseCustomModule } from 'src/helpers/response.help';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Public } from './decorators/public.decorator';
+import { AuthsPayloads } from './gateways/auths-payload.gateway';
 
 @ApiTags('auths')
 @Controller('auths')
@@ -28,9 +29,13 @@ export class AuthsController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @Get('/profile')
-  getProfile(@Request() req) {
+  async getProfile(@Request() req) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { iat, exp, ...data } = req.payload;
-    return ResponseCustomModule.ok(data,'Referenced profile successfully retrieved');
+    const user = await this.authsService.getUserService().findById(data.id);
+    return ResponseCustomModule.ok(
+      AuthsPayloads[user.role].payload(user),
+      'Referenced profile successfully retrieved',
+    );
   }
 }

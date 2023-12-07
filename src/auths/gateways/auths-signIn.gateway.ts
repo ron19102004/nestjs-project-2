@@ -9,22 +9,12 @@ import { Admin } from 'src/modules';
 import { HashCustomeModule } from 'src/helpers/hash.help';
 
 export abstract class SignInStrategy {
-  protected static INSTANCE: SignInStrategy;
-  public static setInstance(instance: SignInStrategy): SignInStrategy {
-    this.INSTANCE = instance;
-    return this.INSTANCE;
-  }
   abstract login(
     signInDto: SignInDto,
     userService: UserService,
   ): Promise<IResObj<{ user: Admin; deviceName: string | null }>>;
 }
 export class SignInByEmailStrategy extends SignInStrategy {
-  public static getInstance(): SignInByEmailStrategy {
-    return this.INSTANCE
-      ? this.INSTANCE
-      : SignInStrategy.setInstance(new SignInByEmailStrategy());
-  }
   async login(
     signInDto: SignInDto,
     userService: UserService,
@@ -44,17 +34,13 @@ export class SignInByEmailStrategy extends SignInStrategy {
   }
 }
 export class SignInByPhoneNumberStrategy extends SignInStrategy {
-  public static getInstance(): SignInByPhoneNumberStrategy {
-    return this.INSTANCE
-      ? this.INSTANCE
-      : SignInStrategy.setInstance(new SignInByPhoneNumberStrategy());
-  }
   async login(
     signInDto: SignInDto,
     userService: UserService,
   ): Promise<IResObj<{ user: Admin; deviceName: string | null }>> {
+    
     if (!ValidatorCustomModule.isPhoneNumber(signInDto.data_login_first.trim()))
-      return ResponseCustomModule.error('Email is not valid', 400);
+      return ResponseCustomModule.error('Phone number is not valid', 400);
     const user: Admin = await userService.findByPhoneNumber(
       signInDto.data_login_first.trim(),
     );
@@ -73,6 +59,6 @@ export enum LOGIN_METHOD {
 }
 //registation record for login methods
 const SignInStrategys: Record<string, SignInStrategy> = {};
-SignInStrategys[LOGIN_METHOD.phone] = SignInByPhoneNumberStrategy.getInstance();
-SignInStrategys[LOGIN_METHOD.email] = SignInByEmailStrategy.getInstance();
+SignInStrategys[LOGIN_METHOD.phone] = new SignInByPhoneNumberStrategy()
+SignInStrategys[LOGIN_METHOD.email] = new SignInByEmailStrategy();
 export { SignInStrategys };

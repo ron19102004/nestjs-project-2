@@ -5,8 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Booking } from './entities/booking.entity';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from '../user/user.module';
-import { ServiceModule } from '../service/service.module';
 import { TelebotModule } from '../telebot/telebot.module';
+import { UserServiceModule } from '../user-service/user-service.module';
 
 @Module({
   controllers: [BookingController],
@@ -15,7 +15,7 @@ import { TelebotModule } from '../telebot/telebot.module';
     TypeOrmModule.forFeature([Booking]),
     ConfigModule,
     UserModule,
-    ServiceModule,
+    UserServiceModule,
     TelebotModule,
   ],
   exports: [BookingService],

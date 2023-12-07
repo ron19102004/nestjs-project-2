@@ -1,6 +1,7 @@
 import { EntityBase } from 'src/modules/base/entity.base';
-import { Admin, ProcessBooking, Service } from 'src/modules';
+import { Admin, ProcessBooking } from 'src/modules';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { UserService } from 'src/modules/user-service/entities/user-service.entity';
 
 @Entity('booking')
 export class Booking extends EntityBase {
@@ -41,8 +42,8 @@ export class Booking extends EntityBase {
     length: 255,
   })
   public timeInit: string;
-  @ManyToOne(() => Service, (s: Service) => s.booking)
-  public service: Service;
+  @ManyToOne(() => UserService, (s: UserService) => s.booking)
+  public uService: UserService;
   @ManyToOne(() => Admin, (a: Admin) => a.bookingForAdmin)
   public admin: Admin;
   @ManyToOne(() => Admin, (a: Admin) => a.bookingForUser)

@@ -2,12 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Booking } from './entities/booking.entity';
 import { Repository } from 'typeorm';
-import { ServiceService } from '../service/service.service';
 import { UserService } from '../user/user.service';
 import { IResObj, ResponseCustomModule } from 'src/helpers/response.help';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { Admin } from '../user/entities/admin.entity';
-import { Service } from '../service/entities/service.entity';
 import { TelebotService } from '../telebot/telebot.service';
 import { IAdminSendMessage } from '../telebot/telebot.gateway';
 import { ConfigService } from '@nestjs/config';
@@ -15,13 +13,15 @@ import { EAction } from './dto/data-resp.dto';
 import { ShowAllForAdminDto } from './dto/show-all-for-ad.dto';
 import { ValidatorCustomModule } from 'src/helpers/validator.help';
 import { Role } from '../user/interfaces/enum';
+import { UserServiceService } from '../user-service/user-service.service';
+import { UserServiceEntity } from '..';
 
 @Injectable()
 export class BookingService {
   private URL_FRONTEND: string;
   constructor(
     @InjectRepository(Booking) private repositoty: Repository<Booking>,
-    private serviceService: ServiceService,
+    private userServiceService: UserServiceService,
     private userService: UserService,
     private teleBotService: TelebotService,
     private configService: ConfigService,
@@ -48,16 +48,17 @@ export class BookingService {
     );
     if (!admin)
       return ResponseCustomModule.error('Không tìm thấy tài khoản admin', 404);
-    const service: Service = await this.serviceService.findById(
-      createBookingDto.service_id,
+    const uService: UserServiceEntity = await this.userServiceService.findById(
+      createBookingDto.user_service_id,
     );
-    if (!service)
+    if (!uService)
       return ResponseCustomModule.error('Không tìm thấy dịch vụ', 404);
     const booking: Booking = new Booking();
     if (role !== Role.user) booking.accepted = true;
     booking.user = user;
     booking.admin = admin;
-    booking.service = service;
+    booking.uService = uService;
+    booking.note = createBookingDto.note;
     booking.timeInit = ValidatorCustomModule.getDate();
     const bookingNew: Booking = await this.repositoty.save(booking);
     await this.teleBotService.sendMessageByPhonenumber(
@@ -70,7 +71,7 @@ export class BookingService {
       },
       {
         phoneNumber: user.phoneNumber,
-        message: `Lịch hẹn ${bookingNew.id}id của ${user.lastName} với ${admin.firstName} ${admin.lastName} đã được tạo thành công. Vui lòng chờ chấp nhập và kiểm tra trên website của chúng tôi: ${this.URL_FRONTEND}`,
+        message: `🔔Lịch hẹn ${bookingNew.id}id của ${user.lastName} với ${admin.firstName} ${admin.lastName} đã được tạo thành công. Vui lòng đăng nhập và kiểm tra trên website của chúng tôi: ${this.URL_FRONTEND}\n📝Ghi chú: ${bookingNew.note}`,
       },
     );
     return ResponseCustomModule.ok(bookingNew, 'Thêm hồ sơ thành công');
@@ -85,7 +86,7 @@ export class BookingService {
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.admin', 'admin')
       .leftJoinAndSelect('booking.user', 'user')
-      .leftJoinAndSelect('booking.service', 'service')
+      .leftJoinAndSelect('booking.uService', 'service')
       .where('booking.id=:id', { id: id })
       .andWhere('booking.finished=:finished', { finished: finished })
       .andWhere('booking.accepted=:accepted', { accepted: accepted })
@@ -150,7 +151,7 @@ export class BookingService {
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.admin', 'admin')
       .leftJoinAndSelect('booking.user', 'user')
-      .leftJoinAndSelect('booking.service', 'service')
+      .leftJoinAndSelect('booking.uService', 'uService')
       .where('booking.admin.id=:id', { id: idAdmin })
       .andWhere('booking.deleted=:deleted', { deleted: deleted })
       .orderBy('booking.created_at', 'DESC')
@@ -163,7 +164,7 @@ export class BookingService {
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.admin', 'admin')
       .leftJoinAndSelect('booking.user', 'user')
-      .leftJoinAndSelect('booking.service', 'service')
+      .leftJoinAndSelect('booking.uService', 'service')
       .where('booking.admin.id=:id', { id: idAdmin })
       .andWhere('booking.deleted=:deleted', { deleted: deleted })
       .orderBy('booking.created_at', 'DESC')
@@ -179,7 +180,7 @@ export class BookingService {
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.admin', 'admin')
       .leftJoinAndSelect('booking.user', 'user')
-      .leftJoinAndSelect('booking.service', 'service')
+      .leftJoinAndSelect('booking.uService', 'service')
       .where('booking.admin.id=:id', { id: idAdmin })
       .andWhere('booking.finished=:finished', { finished: finished })
       .andWhere('booking.accepted=:accepted', { accepted: accepted })
@@ -193,7 +194,7 @@ export class BookingService {
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.admin', 'admin')
       .leftJoinAndSelect('booking.user', 'user')
-      .leftJoinAndSelect('booking.service', 'service')
+      .leftJoinAndSelect('booking.uService', 'service')
       .where('booking.user.id=:id', { id: idUser })
       .andWhere('booking.deleted=:deleted', { deleted: false })
       .orderBy('booking.created_at', 'ASC')
@@ -209,7 +210,7 @@ export class BookingService {
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.admin', 'admin')
       .leftJoinAndSelect('booking.user', 'user')
-      .leftJoinAndSelect('booking.service', 'service')
+      .leftJoinAndSelect('booking.uService', 'service')
       .where('booking.user.id=:id', { id: idUser })
       .andWhere('booking.finished=:finished', { finished: finished })
       .andWhere('booking.accepted=:accepted', { accepted: accepted })

@@ -1,8 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Service } from 'src/modules/service/entities/service.entity';
-
 export interface IDataBookingDto {
-  service: Service;
+  uService: any;
   admin: any;
   user: any;
   note: string;

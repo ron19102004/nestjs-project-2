@@ -31,7 +31,11 @@ export class ValidatorModule implements IValidatorModule {
   getDate(): string {
     const date = new Date();
     return (
-      date.getDate() + '-' + (date.getMonth() + 1) + ':' + date.getFullYear()
+      (date.getDate() < 10 ? `0${date.getDate()}` : date.getDate()) +
+      '-' +
+      (date.getMonth() + 1) +
+      '-' +
+      date.getFullYear()
     );
   }
   isDate(date: string): boolean {

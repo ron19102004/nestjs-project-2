@@ -40,6 +40,14 @@ export class UserServiceService {
       'Thêm dịch vụ thành công',
     );
   }
+  async find() {
+    return await this.repository.find({
+      relations: ['admin', 'service'],
+      where: {
+        deleted: false,
+      },
+    });
+  }
   async findById(id: number): Promise<UserServiceEntity> {
     return await this.repository
       .createQueryBuilder('users_services')
@@ -75,5 +83,15 @@ export class UserServiceService {
       .where('users_services.service.id=:id', { id: id })
       .andWhere('users_services.deleted=:deleted', { deleted: false })
       .getMany();
+  }
+  async remove(id: number) {
+    const item = await this.repository.findOne({
+      where: {
+        id: id,
+        deleted: false,
+      },
+    });
+    item.deleted = true;
+    await this.repository.save(item);
   }
 }

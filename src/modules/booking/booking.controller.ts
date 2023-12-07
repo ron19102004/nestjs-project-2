@@ -81,7 +81,7 @@ export class BookingController {
       const admin: Admin = item.admin;
       data.push({
         id: item.id,
-        service: item.service,
+        uService: item.uService,
         admin: AuthsPayloads[admin.role].payload(admin),
         user: AuthsPayloads[user.role].payload(user),
         note: item.note,

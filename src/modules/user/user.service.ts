@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { IUserDto } from './dto/user-dto';
 import { ResponseCustomModule } from 'src/helpers/response.help';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -28,6 +29,24 @@ export class UserService {
       userDto.export(user),
       'User created successfully',
     );
+  }
+  async update(updateDto: UpdateUserDto) {
+    const user: Admin = await this.findById(updateDto.id);
+    if (user.email !== updateDto.email) {
+      const userFindByEmail = await this.findByEmail(updateDto.email);
+      if (userFindByEmail)
+        return ResponseCustomModule.error('Email đã tồn tại', 400);
+      user.email = updateDto.email;
+    }
+    user.address = updateDto.address;
+    user.age = updateDto.age;
+    user.sex = updateDto.sex;
+    user.phoneNumber = updateDto.phoneNumber;
+    user.firstName = updateDto.firstName;
+    user.lastName = updateDto.lastName;
+    user.avatar = updateDto.avatar;
+    await this.repository.save(user);
+    return ResponseCustomModule.ok(null, 'Cập nhật thành công.');
   }
   async findByEmail(email: string): Promise<Admin> {
     return await this.repository

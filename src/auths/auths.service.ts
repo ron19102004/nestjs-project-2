@@ -20,6 +20,9 @@ export class AuthsService {
     private configService: ConfigService,
     private telebotService: TelebotService,
   ) {}
+  public getUserService(){
+    return this.userService
+  }
   async signIn(signInDto: SignInDto) {
     const login: IResObj<{ user: Admin; deviceName: string | null }> =
       await SignInStrategys[signInDto.login_method].login(
@@ -46,10 +49,12 @@ export class AuthsService {
     }>('JWT');
     const payload = AuthsPayloads[user.role].payload(user);
     const access_token = await this.jwtService.signAsync(payload, {
+      expiresIn: '2h',
       algorithm: 'HS256',
       secret: jwtConfigs.ACCESS_TOKEN_SECRET,
     });
     let refresh_token = await this.jwtService.signAsync(payload, {
+      expiresIn: '2h',
       algorithm: 'HS256',
       secret: jwtConfigs.REFRESH_TOKEN_SECRET,
     });
