@@ -10,7 +10,9 @@ export interface IDataBookingDto {
   rejected: boolean;
   created_at: Date;
   id:number,
-  timeInit:string
+  timeInit:string,
+  confirm:boolean,
+  appointment_date:string
 }
 export enum EAction {
   ACCEPT = "accept",

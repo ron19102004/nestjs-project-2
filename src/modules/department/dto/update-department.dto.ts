@@ -8,4 +8,5 @@ export class UpdateDepartmentDto extends PartialType(CreateDepartmentDto) {
   id: number;
   treatment_techniques: string;
   equipment_system: string;
+  avatar: string;
 }

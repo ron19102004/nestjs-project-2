@@ -10,7 +10,6 @@ import { TelebotModule } from './modules/telebot/telebot.module';
 import { MessageModule } from './modules/message/message.module';
 import { ServiceModule } from './modules/service/service.module';
 import { UserServiceModule } from './modules/user-service/user-service.module';
-import { ProcessBookingModule } from './modules/process-booking/process-booking.module';
 import { BookingAnalyticModule } from './analytics/booking-analytic/booking-analytic.module';
 import configs_custom from './configs/environment.config';
 import typeormModuleOptionsCustom from './configs/database.config';
@@ -32,7 +31,6 @@ import { BookingModule } from './modules/booking/booking.module';
     ServiceModule,
     UserServiceModule,
     BookingModule,
-    ProcessBookingModule,
     BookingAnalyticModule,
   ],
   controllers: [],

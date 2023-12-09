@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -25,6 +26,7 @@ import { EAction, IDataBookingDto } from './dto/data-resp.dto';
 import { AuthsPayloads } from 'src/auths/gateways/auths-payload.gateway';
 import { ResponseCustomModule } from 'src/helpers/response.help';
 import { ShowAllForAdminDto } from './dto/show-all-for-ad.dto';
+import { UpdateNoteDto } from './dto/update-note.dto';
 
 @Controller('booking')
 @ApiTags('booking')
@@ -39,6 +41,30 @@ export class BookingController {
   @HttpCode(HttpStatus.OK)
   async createForAdmin(@Body() createBookingDto: CreateBookingDto) {
     return await this.bookingService.create(createBookingDto, Role.admin);
+  }
+  @Post('/admin=:id/bookingID=:bid&code=:code')
+  @UseGuards(MyselfGuard)
+  @Roles(Role.admin, Role.master)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async adminConfirm(
+    @Param('id') id: number,
+    @Param('bid') bid: number,
+    @Param('code') code: number,
+  ) {
+    return await this.bookingService.adminConfirm(code, bid, id);
+  }
+  @Post('/admin=:id/bookingID=:bid/refresh-code')
+  @UseGuards(MyselfGuard)
+  @Roles(Role.admin, Role.master)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async refreshCode(@Param('id') id: number, @Param('bid') bid: number) {
+    return await this.bookingService.refreshCodeNumber(bid, id);
   }
   @Post('/user/:id')
   @UseGuards(MyselfGuard)
@@ -74,14 +100,23 @@ export class BookingController {
       action,
     );
   }
-  private modifiesBookings(bookings: Booking[]): IDataBookingDto[] {
+  private async modifiesBookings(
+    bookings: Booking[],
+  ): Promise<IDataBookingDto[]> {
     const data: IDataBookingDto[] = [];
     for (const item of bookings) {
       const user: Admin = item.user;
       const admin: Admin = item.admin;
+      const uService = await this.bookingService
+        .getuserServiceService()
+        .findById(item.uService.id);
+      const uServiceResult = {
+        id: uService.id,
+        service: uService.service,
+      };
       data.push({
         id: item.id,
-        uService: item.uService,
+        uService: uServiceResult,
         admin: AuthsPayloads[admin.role].payload(admin),
         user: AuthsPayloads[user.role].payload(user),
         note: item.note,
@@ -91,6 +126,8 @@ export class BookingController {
         rejected: item.rejected,
         created_at: item.created_at,
         timeInit: item.timeInit,
+        confirm: item.confirm,
+        appointment_date: item.appointment_date,
       });
     }
     return data;
@@ -105,7 +142,7 @@ export class BookingController {
   async showAllBookingForUser(@Param('id') id: number) {
     const booking: Booking[] =
       await this.bookingService.showAllBookingForUser(id);
-    const data: IDataBookingDto[] = this.modifiesBookings(booking);
+    const data: IDataBookingDto[] =await this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
       data,
       'Lấy tất cả hồ sơ lịch hẹn thành công',
@@ -128,7 +165,7 @@ export class BookingController {
       showAllForAdminDto,
       deleted,
     );
-    const data: IDataBookingDto[] = this.modifiesBookings(booking);
+    const data: IDataBookingDto[] = await this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
       data,
       'Lấy tất cả hồ sơ lịch hẹn thành công',
@@ -146,14 +183,14 @@ export class BookingController {
     @Param('deleted') deleted: boolean,
   ) {
     const booking: Booking[] =
-      await this.bookingService.showAllBookingForAdminNotSkipTake(id,deleted);
-    const data: IDataBookingDto[] = this.modifiesBookings(booking);
+      await this.bookingService.showAllBookingForAdminNotSkipTake(id, deleted);
+    const data: IDataBookingDto[] = await this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
       data,
       'Lấy tất cả hồ sơ lịch hẹn thành công',
     );
   }
-  @Get('/admin/:id/accepted=:accepted&injected=:injected&finished=:finished')
+  @Get('/admin/:id/accepted=:accepted&rejected=:rejected&finished=:finished&confirmed=:confirmed/skip=:skip&take=:take')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master)
   @UseGuards(RolesGuard)
@@ -163,20 +200,26 @@ export class BookingController {
   async findManyWithConditionsForAdmin(
     @Param('id') id: number,
     @Param('accepted') accepted: boolean,
-    @Param('injected') injected: boolean,
+    @Param('rejected') rejected: boolean,
     @Param('finished') finished: boolean,
+    @Param('confirmed') comfirmed: boolean,
+    @Param('skip') skip: string,
+    @Param('take') take: string,
   ) {
     const booking: Booking[] =
       await this.bookingService.findManyByConditionsForAdmin(
         id,
         finished,
         accepted,
-        injected,
+        rejected,
+        comfirmed,
+        parseInt(take),
+        parseInt(skip)
       );
-    const data: IDataBookingDto[] = this.modifiesBookings(booking);
+    const data: IDataBookingDto[] = await this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
       data,
-      `Lấy tất cả hồ sơ lịch hẹn thành công theo điều kiện {accepted=${accepted};injected=${injected};finished=${finished}}`,
+      `Lấy tất cả hồ sơ lịch hẹn thành công theo điều kiện {accepted=${accepted};rejected=${rejected};finished=${finished}}`,
     );
   }
   @Get('/user/:id/accepted=:accepted&injected=:injected&finished=:finished')
@@ -199,7 +242,7 @@ export class BookingController {
         accepted,
         injected,
       );
-    const data: IDataBookingDto[] = this.modifiesBookings(booking);
+    const data: IDataBookingDto[] = await this.modifiesBookings(booking);
     return ResponseCustomModule.ok(
       data,
       `Lấy tất cả hồ sơ lịch hẹn thành công theo điều kiện {accepted=${accepted};injected=${injected};finished=${finished}}`,
@@ -212,14 +255,18 @@ export class BookingController {
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  async remove(
-    @Param('id') id: number,
-    @Param('bookingId') bookingId: number,
-  ) {
-    await this.bookingService.removeByIdBooking(bookingId)
-    return ResponseCustomModule.ok(
-      null,
-      'Xóa thành công',
-    );
+  async remove(@Param('id') id: number, @Param('bookingId') bookingId: number) {
+    await this.bookingService.removeByIdBooking(bookingId);
+    return ResponseCustomModule.ok(null, 'Xóa thành công');
+  }
+  @Put('/admin=:id/update-note')
+  @UseGuards(MyselfGuard)
+  @Roles(Role.admin, Role.master)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async updateNote(@Body() updateNote:UpdateNoteDto,@Param('id') id:string){
+    return await this.bookingService.updateNote(updateNote,id)
   }
 }

@@ -70,14 +70,14 @@ export class BookingAnalyticService {
     }
     const percent: number[] = [
       percentAcceptedYet,
-      percentAccepted,
       percentRejected,
+      percentAccepted,
       percentFinished,
     ];
     const quantity: number[] = [
       quantityAcceptedYet,
-      quantityAccepted,
       quantityRejected,
+      quantityAccepted,
       quantityFinished,
     ];
     const data = {
@@ -157,14 +157,14 @@ export class BookingAnalyticService {
     }
     const percent: number[] = [
       percentAcceptedYet,
-      percentAccepted,
       percentRejected,
+      percentAccepted,
       percentFinished,
     ];
     const quantity: number[] = [
       quantityAcceptedYet,
-      quantityAccepted,
       quantityRejected,
+      quantityAccepted,
       quantityFinished,
     ];
     const data = {

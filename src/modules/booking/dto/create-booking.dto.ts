@@ -11,7 +11,10 @@ export class CreateBookingDto {
   @ApiProperty({ nullable: false })
   @IsNumber()
   public user_id: number;
-  @ApiProperty({ nullable: false })
+  @ApiProperty({ nullable: true })
   @IsString()
   public note: string;
+  @ApiProperty({ nullable: false })
+  @IsString()
+  public appointment_date: string;
 }

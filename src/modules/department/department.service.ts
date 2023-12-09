@@ -68,6 +68,7 @@ export class DepartmentService {
     department.name = updateDepartmentDto.name;
     department.equipment_system = updateDepartmentDto.equipment_system;
     department.treatment_techniques = updateDepartmentDto.treatment_techniques;
+    department.avatar = updateDepartmentDto.avatar;    
     await this.repository.save(department);
   }
 }

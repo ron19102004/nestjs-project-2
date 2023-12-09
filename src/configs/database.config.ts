@@ -10,7 +10,6 @@ import {
   Service,
   UserServiceEntity,
   Booking,
-  ProcessBooking,
   Feedback,
 } from 'src/modules';
 interface IConfigsDatabase {
@@ -39,7 +38,6 @@ export default {
     Service,
     UserServiceEntity,
     Booking,
-    ProcessBooking,
     Feedback,
   ],
   subscribers: [],

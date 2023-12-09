@@ -1,6 +1,6 @@
 import { EntityBase } from 'src/modules/base/entity.base';
-import { Admin, ProcessBooking } from 'src/modules';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Admin } from 'src/modules';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { UserService } from 'src/modules/user-service/entities/user-service.entity';
 
 @Entity('booking')
@@ -38,16 +38,33 @@ export class Booking extends EntityBase {
   @Column({
     name: 'timeInit',
     type: 'varchar',
-    nullable: true,
+    nullable: false,
     length: 255,
   })
   public timeInit: string;
+  @Column({
+    name: 'code_number',
+    type: 'int',
+    nullable: false,
+  })
+  public code_number: number;
+  @Column({
+    name: 'confirm',
+    type: 'boolean',
+    default: false,
+  })
+  public confirm: boolean;
+  @Column({
+    name: 'appointment_date',
+    type: 'varchar',
+    nullable: false,
+    length: 255,
+  })
+  public appointment_date: string;
   @ManyToOne(() => UserService, (s: UserService) => s.booking)
   public uService: UserService;
   @ManyToOne(() => Admin, (a: Admin) => a.bookingForAdmin)
   public admin: Admin;
   @ManyToOne(() => Admin, (a: Admin) => a.bookingForUser)
   public user: Admin;
-  @OneToMany(() => ProcessBooking, (p: ProcessBooking) => p.booking)
-  public processBookings: ProcessBooking[];
 }

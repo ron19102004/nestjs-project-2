@@ -15,6 +15,7 @@ import { ValidatorCustomModule } from 'src/helpers/validator.help';
 import { Role } from '../user/interfaces/enum';
 import { UserServiceService } from '../user-service/user-service.service';
 import { UserServiceEntity } from '..';
+import { UpdateNoteDto } from './dto/update-note.dto';
 
 @Injectable()
 export class BookingService {
@@ -31,8 +32,21 @@ export class BookingService {
   getRepository() {
     return this.repositoty;
   }
+  getuserServiceService() {
+    return this.userServiceService;
+  }
   getURL_FRONTEND(): string {
     return this.URL_FRONTEND;
+  }
+  async countBookingAtDateAndService(date: string, id_service: number) {
+    return await this.repositoty
+      .createQueryBuilder('booking')
+      .leftJoinAndSelect('booking.uService', 'uservice')
+      .where('booking.appointment_date=:date', { date: date })
+      .andWhere('uservice.id=:id', { id: id_service })
+      .andWhere('booking.accepted=:accepted', { accepted: true })
+      .andWhere('booking.deleted=:deleted', { deleted: false })
+      .getCount();
   }
   async create(
     createBookingDto: CreateBookingDto,
@@ -53,14 +67,35 @@ export class BookingService {
     );
     if (!uService)
       return ResponseCustomModule.error('Không tìm thấy dịch vụ', 404);
+    const countBookingAtDate: number = await this.countBookingAtDateAndService(
+      createBookingDto.appointment_date,
+      createBookingDto.user_service_id,
+    );
+    if (countBookingAtDate > 100)
+      return ResponseCustomModule.error(
+        `Xin lỗi ! Vui lòng chọn ngày khác. Số lượng khách trong ngày ${createBookingDto.appointment_date} đã đạt 100 người`,
+        400,
+      );
+
     const booking: Booking = new Booking();
-    if (role !== Role.user) booking.accepted = true;
+    if (role === Role.user) {
+      booking.confirm = true;
+    }
+    booking.appointment_date = createBookingDto.appointment_date;
     booking.user = user;
     booking.admin = admin;
     booking.uService = uService;
     booking.note = createBookingDto.note;
     booking.timeInit = ValidatorCustomModule.getDate();
+    booking.code_number = Math.floor(100000 + Math.random() * 900000);
     const bookingNew: Booking = await this.repositoty.save(booking);
+
+    let mess: string = `🔔Lịch hẹn ${bookingNew.id}id của ${user.lastName} với ${admin.firstName} ${admin.lastName} đã được tạo thành công. Vui lòng kiểm tra trên hệ thống.
+📝Ghi chú: ${bookingNew.note}`;
+    if (role !== Role.user)
+      mess = `🔔Lịch hẹn ${bookingNew.id}id của ${user.lastName} với ${admin.firstName} ${admin.lastName} đã được tạo thành công. Vui lòng cung cấp mã xác thực để nhân viên có thể xác thực hồ sơ.
+🔢Mã xác thực: ${bookingNew.code_number}
+📝Ghi chú: ${bookingNew.note}`;
     await this.teleBotService.sendMessageByPhonenumber(
       {
         firstName: admin.firstName,
@@ -71,10 +106,89 @@ export class BookingService {
       },
       {
         phoneNumber: user.phoneNumber,
-        message: `🔔Lịch hẹn ${bookingNew.id}id của ${user.lastName} với ${admin.firstName} ${admin.lastName} đã được tạo thành công. Vui lòng đăng nhập và kiểm tra trên website của chúng tôi: ${this.URL_FRONTEND}\n📝Ghi chú: ${bookingNew.note}`,
+        message: mess,
       },
     );
     return ResponseCustomModule.ok(bookingNew, 'Thêm hồ sơ thành công');
+  }
+  async adminConfirm(code: number, idBooking: number, idAdmin: number) {
+    const booking: Booking = await this.findById(
+      idBooking,
+      false,
+      false,
+      false,
+    );
+    if (!booking)
+      return ResponseCustomModule.error('Không tìm thấy hồ sơ', 404);
+    if (booking.confirm === true)
+      return ResponseCustomModule.error('Hồ sơ đã được xác thực', 400);
+    if (booking.admin.id + '' !== idAdmin + '')
+      return ResponseCustomModule.error(
+        'Bạn không có quyền xác thực hồ sơ này',
+        403,
+      );
+    if (booking.code_number + '' !== code + '')
+      return ResponseCustomModule.error('Mã xác thực không hợp lệ', 403);
+    booking.confirm = true;
+    booking.accepted = true;
+    await this.repositoty.save(booking);
+    const admin = booking.admin;
+    const user = booking.user;
+    const mess: string = `🔔Lịch hẹn ${booking.id}id của ${user.lastName} với ${admin.firstName} ${admin.lastName} đã được xác thực. Vui lòng kiểm tra trên hệ thống.
+📝Ghi chú: ${booking.note}`;
+    await this.teleBotService.sendMessageByPhonenumber(
+      {
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        phone: admin.phoneNumber,
+        address: admin.address,
+      },
+      {
+        phoneNumber: user.phoneNumber,
+        message: mess,
+      },
+    );
+    return ResponseCustomModule.ok(null, 'Xác thực thành công');
+  }
+  async refreshCodeNumber(bookingID: number, adminID: number) {
+    const booking: Booking = await this.findById(
+      bookingID,
+      false,
+      false,
+      false,
+    );
+    if (!booking)
+      return ResponseCustomModule.error('Không tìm thấy hồ sơ', 404);
+    if (booking.confirm === true)
+      return ResponseCustomModule.error('Hồ sơ đã được xác thực', 400);
+    if (booking.admin.id + '' !== adminID + '')
+      return ResponseCustomModule.error(
+        'Bạn không có quyền xác thực hồ sơ này',
+        403,
+      );
+    const code = Math.floor(100000 + Math.random() * 900000);
+    booking.code_number = code;
+    await this.repositoty.save(booking);
+    const admin = booking.admin;
+    const user = booking.user;
+    const mess: string = `🔔Lịch hẹn ${booking.id}id của ${user.lastName} với ${admin.firstName} ${admin.lastName} đã được gửi lại mã xác thực như sau:
+🔢Mã xác thực: ${booking.code_number}
+📝Ghi chú: ${booking.note}`;
+    await this.teleBotService.sendMessageByPhonenumber(
+      {
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        phone: admin.phoneNumber,
+        address: admin.address,
+      },
+      {
+        phoneNumber: user.phoneNumber,
+        message: mess,
+      },
+    );
+    return ResponseCustomModule.ok(null, 'Xác gửi lại mã xác thực');
   }
   async findById(
     id: number,
@@ -94,7 +208,16 @@ export class BookingService {
       .andWhere('booking.deleted=:deleted', { deleted: false })
       .getOne();
   }
-
+  async findByIdUser(id: number): Promise<Booking> {
+    return await this.repositoty
+      .createQueryBuilder('booking')
+      .leftJoinAndSelect('booking.admin', 'admin')
+      .leftJoinAndSelect('booking.user', 'user')
+      .leftJoinAndSelect('booking.uService', 'service')
+      .where('booking.user.id=:id', { id: id })
+      .andWhere('booking.deleted=:deleted', { deleted: false })
+      .getOne();
+  }
   //function for admin
   async actionBookingByIdBookingForAdmin(
     admin: IAdminSendMessage,
@@ -118,6 +241,11 @@ export class BookingService {
     }
     if (!booking)
       return ResponseCustomModule.error('Không tìm thấy hồ sơ người dùng', 404);
+    if (!booking.confirm)
+      return ResponseCustomModule.error(
+        'Hồ sơ chưa được xác thực. Vui lòng xác thực hồ sơ',
+        403,
+      );
     let actionString: string = 'được chấp nhận';
     switch (action) {
       case EAction.ACCEPT: {
@@ -126,6 +254,7 @@ export class BookingService {
       }
       case EAction.FINISH: {
         booking.finished = true;
+        booking.finished_at = new Date();
         actionString = 'được hoàn thành';
         break;
       }
@@ -175,6 +304,9 @@ export class BookingService {
     finished: boolean,
     accepted: boolean,
     rejected: boolean,
+    confirmed: boolean,
+    take: number,
+    skip: number,
   ) {
     return await this.repositoty
       .createQueryBuilder('booking')
@@ -185,8 +317,11 @@ export class BookingService {
       .andWhere('booking.finished=:finished', { finished: finished })
       .andWhere('booking.accepted=:accepted', { accepted: accepted })
       .andWhere('booking.rejected=:rejected', { rejected: rejected })
+      .andWhere('booking.confirm=:confirm', { confirm: confirmed })
       .andWhere('booking.deleted=:deleted', { deleted: false })
       .orderBy('booking.created_at', 'ASC')
+      .skip(skip)
+      .take(take)
       .getMany();
   }
   async showAllBookingForUser(idUser: number) {
@@ -226,7 +361,27 @@ export class BookingService {
         deleted: false,
       },
     });
+    if (!booking) return;
     booking.deleted = true;
     await this.repositoty.save(booking);
+  }
+  async updateNote(updateNoteDto: UpdateNoteDto, admin_id: string) {
+    const booking: Booking = await this.repositoty.findOne({
+      relations: ['admin'],
+      where: {
+        id: updateNoteDto.booking_id,
+        deleted: false,
+      },
+    });
+    if (!booking)
+      return ResponseCustomModule.error('Không tìm thấy hồ sơ', 404);
+    if (booking.admin.id + '' !== admin_id + '')
+      return ResponseCustomModule.error(
+        'Bạn không có quyền thay đổi ghi chú',
+        403,
+      );
+    booking.note = updateNoteDto.note;
+    await this.repositoty.save(booking);
+    return ResponseCustomModule.ok(null, 'Cập nhật thành công');
   }
 }
