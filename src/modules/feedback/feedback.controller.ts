@@ -5,8 +5,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
-  Response,
   UseGuards,
 } from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
@@ -22,18 +22,44 @@ import { Role } from '../user/interfaces/enum';
 @Controller('feedback')
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
-  @Post()
+  @Post('/:id')
   @UseGuards(MyselfGuard)
   @Roles(Role.admin, Role.master, Role.user)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  async create(@Response() req, @Body() createFeedbackDto: CreateFeedbackDto) {
-    return await this.feedbackService.create(req.payload.id, createFeedbackDto);
+  async create(
+    @Param('id') id: number,
+    @Body() createFeedbackDto: CreateFeedbackDto,
+  ) {
+    return await this.feedbackService.create(
+      parseInt(id + ''),
+      createFeedbackDto,
+    );
+  }
+  @Get('/:id/feedbackId=:feedback_id')
+  @UseGuards(MyselfGuard)
+  @Roles(Role.master, Role.admin)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async confirm(@Param('feedback_id') feedback_id: number) {
+    await this.feedbackService.confirm(parseInt(feedback_id + ''));
   }
   @Get()
   async get() {
     return await this.feedbackService.findAll();
+  }
+  @Get('/:id')
+  @UseGuards(MyselfGuard)
+  @Roles(Role.admin, Role.master)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async findAllForAdmin() {
+    return await this.feedbackService.findAllForAdmin();
   }
 }

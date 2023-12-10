@@ -18,6 +18,12 @@ export class Feedback extends EntityBase {
     nullable: false,
   })
   public content: string;
+  @Column({
+    name: 'confirmed',
+    type: 'boolean',
+    default: false
+  })
+  public confirmed: boolean
   @ManyToOne(() => Admin, (a: Admin) => a.feedBacks)
   public user: Admin;
 }

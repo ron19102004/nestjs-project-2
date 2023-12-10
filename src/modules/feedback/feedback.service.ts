@@ -26,12 +26,13 @@ export class FeedbackService {
     return ResponseCustomModule.ok(null, 'Đã thêm feedback thành côn');
   }
   async findAll() {
-    const feedbacks: Feedback[] = await this.repository.find({
-      relations: ['user'],
-      where: {
-        deleted: false,
-      },
-    });
+    const feedbacks: Feedback[] = await this.repository
+      .createQueryBuilder('feedbacks')
+      .leftJoinAndSelect('feedbacks.user', 'user')
+      .where('feedbacks.deleted=:dl', { dl: false })
+      .andWhere('feedbacks.confirmed=:cf', { cf: true })
+      .orderBy('feedbacks.id', 'DESC')
+      .getMany();
     const data = [];
     for (const feedback of feedbacks) {
       const { user, ...item } = feedback;
@@ -41,5 +42,34 @@ export class FeedbackService {
       });
     }
     return ResponseCustomModule.ok(data, 'Truy xuất thành công');
+  }
+  async findAllForAdmin() {
+    const feedbacks: Feedback[] = await this.repository
+      .createQueryBuilder('feedbacks')
+      .leftJoinAndSelect('feedbacks.user', 'user')
+      .where('feedbacks.deleted=:dl', { dl: false })
+      .orderBy('feedbacks.id', 'DESC')
+      .getMany();
+    const data = [];
+    for (const feedback of feedbacks) {
+      const { user, ...item } = feedback;
+      data.push({
+        user: AuthsPayloads[user.role].payload(user),
+        data: item,
+      });
+    }
+    return ResponseCustomModule.ok(data, 'Truy xuất thành công');
+  }
+  async confirm(idFb: number) {
+    const fb = await this.repository.findOne({
+      where: {
+        id: idFb,
+        deleted: false,
+        confirmed: false,
+      },
+    });
+    if (!fb) return;
+    fb.confirmed = true;
+    await this.repository.save(fb);
   }
 }
