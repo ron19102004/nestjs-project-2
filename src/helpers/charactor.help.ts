@@ -12,5 +12,6 @@ export class CharactorModule implements ICharactorModule {
     }
     return res;
   }
+  
 }
 export const CharactorCustomeModule: ICharactorModule = new CharactorModule();
