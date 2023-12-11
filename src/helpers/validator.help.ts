@@ -7,8 +7,20 @@ export interface IValidatorModule {
   isDate(date: string): boolean;
   getDate(): string;
   isNumber(number: string): boolean;
+  compareDate(d1: string, d2: string): number;
 }
 export class ValidatorModule implements IValidatorModule {
+  compareDate(d1: string, d2: string): number {
+    const date1 = new Date(d1.split("-").reverse().join("-"));
+    const date2 = new Date(d2.split("-").reverse().join("-"));
+    if (date1 < date2) {
+      return -1;
+    } else if (date1 > date2) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
   private regexValidator = {
     email: /[a-zA-Z0-9_-]+@(vku.udn.vn|gmail.com)/,
     phone: /(0|84)[0-9]{9}/,

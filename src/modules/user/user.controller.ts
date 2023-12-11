@@ -144,7 +144,7 @@ export class UserController {
   async update(@Body() updateDto: UpdateUserDto) {
     return await this.userService.update(updateDto);
   }
-  @Put('/master/update-infoself')
+  @Put('/update-infoself')
   @Roles(Role.master,Role.admin,Role.user)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)

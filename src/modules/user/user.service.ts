@@ -15,6 +15,7 @@ import { DepartmentService } from '../department/department.service';
 import { BranchService } from '../branch/branch.service';
 import { Department } from '../department/entities/department.entity';
 import { Branch } from '../branch/entities/branch.entity';
+import { ValidatorCustomModule } from 'src/helpers/validator.help';
 
 @Injectable()
 export class UserService {
@@ -50,7 +51,7 @@ export class UserService {
       .andWhere('users.deleted=:deleted', { deleted: false })
       .getMany();
   }
-  async findAllAdminLimit(skip:number,take:number) {
+  async findAllAdminLimit(skip: number, take: number) {
     return await this.repository
       .createQueryBuilder('users')
       .leftJoinAndSelect('users.branch', 'branch')
@@ -72,6 +73,15 @@ export class UserService {
   }
   async update(updateDto: UpdateUserDto) {
     const user: Admin = await this.findById(updateDto.id);
+    if (!ValidatorCustomModule.isEmail(updateDto.email))
+      return ResponseCustomModule.error('Email không hợp lệ', 400);
+    if (!ValidatorCustomModule.isPhoneNumber(updateDto.phoneNumber))
+      return ResponseCustomModule.error('Số điện thoại không hợp lệ', 400);
+    if (updateDto.age > 100)
+      return ResponseCustomModule.error(
+        'Bạn không thể sống tới tuổi này. Thật vi diệu đấy',
+        400,
+      );
     if (!user)
       return ResponseCustomModule.error('Không tìm thấy người dùng', 404);
     if (user.email !== updateDto.email) {
@@ -125,7 +135,7 @@ export class UserService {
     });
   }
   async updateBranchDepartment(updateDto: UpdateBranchDepDto) {
-     const user: Admin = await this.findById(updateDto.id);
+    const user: Admin = await this.findById(updateDto.id);
     if (!user)
       return ResponseCustomModule.error('Không tìm thấy người dùng', 404);
     const department: Department = await this.departmentFindById(

@@ -67,13 +67,36 @@ export class BookingService {
     );
     if (!uService)
       return ResponseCustomModule.error('Không tìm thấy dịch vụ', 404);
+    const bookingForAppointmentDate = await this.findByIdUserAndAppointmentDate(
+      user.id,
+      createBookingDto.appointment_date,
+    );
+    if (bookingForAppointmentDate)
+      return ResponseCustomModule.error(
+        `Lịch hẹn ngày ${createBookingDto.appointment_date} đã được đặt bởi bạn. Vui lòng kiểm tra lại trong hồ sơ`,
+        404,
+      );
+    const dateNow = ValidatorCustomModule.getDate();
+    const overDate =
+      ValidatorCustomModule.compareDate(
+        createBookingDto.appointment_date,
+        dateNow,
+      ) >= 0
+        ? true
+        : false;
+    if (!overDate) {
+      return ResponseCustomModule.error(
+        `Xin lỗi ! Vui lòng chọn ngày khác. Ngày ${createBookingDto.appointment_date} đã qua`,
+        400,
+      );
+    }
     const countBookingAtDate: number = await this.countBookingAtDateAndService(
       createBookingDto.appointment_date,
       createBookingDto.user_service_id,
     );
-    if (countBookingAtDate > 100)
+    if (countBookingAtDate > 50)
       return ResponseCustomModule.error(
-        `Xin lỗi ! Vui lòng chọn ngày khác. Số lượng khách trong ngày ${createBookingDto.appointment_date} đã đạt 100 người`,
+        `Xin lỗi ! Vui lòng chọn ngày khác. Số lượng khách trong ngày ${createBookingDto.appointment_date} đã đạt 50 người`,
         400,
       );
 
@@ -205,6 +228,22 @@ export class BookingService {
       .andWhere('booking.finished=:finished', { finished: finished })
       .andWhere('booking.accepted=:accepted', { accepted: accepted })
       .andWhere('booking.rejected=:rejected', { rejected: rejected })
+      .andWhere('booking.deleted=:deleted', { deleted: false })
+      .getOne();
+  }
+  async findByIdUserAndAppointmentDate(
+    id: number,
+    appointment_date: string,
+  ): Promise<Booking> {
+    return await this.repositoty
+      .createQueryBuilder('booking')
+      .leftJoinAndSelect('booking.admin', 'admin')
+      .leftJoinAndSelect('booking.user', 'user')
+      .leftJoinAndSelect('booking.uService', 'service')
+      .where('booking.user.id=:id', { id: id })
+      .andWhere('booking.appointment_date=:appointment_date', {
+        appointment_date: appointment_date,
+      })
       .andWhere('booking.deleted=:deleted', { deleted: false })
       .getOne();
   }
