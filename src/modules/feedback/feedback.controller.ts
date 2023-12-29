@@ -2,6 +2,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -47,6 +48,16 @@ export class FeedbackController {
   @HttpCode(HttpStatus.OK)
   async confirm(@Param('feedback_id') feedback_id: number) {
     await this.feedbackService.confirm(parseInt(feedback_id + ''));
+  }
+  @Delete('/:id/feedbackId=:feedback_id')
+  @UseGuards(MyselfGuard)
+  @Roles(Role.master, Role.admin)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthsGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async delete(@Param('feedback_id') feedback_id: number) {
+    await this.feedbackService.delete(parseInt(feedback_id + ''));
   }
   @Get()
   async get() {

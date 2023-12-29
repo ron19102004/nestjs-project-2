@@ -72,4 +72,15 @@ export class FeedbackService {
     fb.confirmed = true;
     await this.repository.save(fb);
   }
+  async delete(idFb: number) {
+    const fb = await this.repository.findOne({
+      where: {
+        id: idFb,
+        deleted: false,
+      },
+    });
+    if (!fb) return;
+    fb.deleted = true;
+    await this.repository.save(fb);
+  }
 }

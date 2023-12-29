@@ -46,6 +46,13 @@ export class UserController {
     }
     return data;
   }
+  @Get('/details-admin/id=:id')
+  @HttpCode(HttpStatus.OK)
+  async getAdminById(@Param('id') id: string) {
+    if(id === 'NaN') return null;
+    const admin = await this.userService.findAdminById(parseInt(id));
+    return AuthsPayloads[Role.admin].payload(admin);
+  }
   @Get('/allAdmin/skip=:skip&take=:take')
   @HttpCode(HttpStatus.OK)
   async getAllAdminTakeSkip(
@@ -145,7 +152,7 @@ export class UserController {
     return await this.userService.update(updateDto);
   }
   @Put('/update-infoself')
-  @Roles(Role.master,Role.admin,Role.user)
+  @Roles(Role.master, Role.admin, Role.user)
   @UseGuards(RolesGuard)
   @UseGuards(AuthsGuard)
   @ApiBearerAuth()

@@ -70,6 +70,8 @@ export class UserServiceService {
       .createQueryBuilder('users_services')
       .leftJoinAndSelect('users_services.admin', 'admin')
       .leftJoinAndSelect('users_services.service', 'service')
+      .leftJoinAndSelect('admin.department', 'department')
+      .leftJoinAndSelect('admin.branch', 'branch')
       .where('admin.role!=:role', { role: 'user' })
       .andWhere('users_services.deleted=:deleted', { deleted: false })
       .getMany();
@@ -97,6 +99,8 @@ export class UserServiceService {
       .createQueryBuilder('users_services')
       .leftJoinAndSelect('users_services.admin', 'admin')
       .leftJoinAndSelect('users_services.service', 'service')
+      .leftJoinAndSelect('admin.department', 'department')
+      .leftJoinAndSelect('admin.branch', 'branch')
       .where('admin.id=:id', { id: id })
       .andWhere('users_services.deleted=:deleted', { deleted: false })
       .getMany();

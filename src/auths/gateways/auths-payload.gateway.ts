@@ -9,6 +9,7 @@ export abstract class AuthsPayload {
 }
 export class UserPayload extends AuthsPayload {
   payload(user: Admin) {
+    if(!user) return null;
     return {
       id: user.id,
       firstName: user.firstName,
@@ -25,6 +26,7 @@ export class UserPayload extends AuthsPayload {
 }
 export class AdminPayload extends AuthsPayload {
   payload(user: Admin) {
+    if(!user) return null;
     return {
       id: user.id,
       firstName: user.firstName,

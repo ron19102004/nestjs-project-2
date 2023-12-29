@@ -51,6 +51,17 @@ export class UserService {
       .andWhere('users.deleted=:deleted', { deleted: false })
       .getMany();
   }
+  async findAdminById(id:number) {
+    return await this.repository
+      .createQueryBuilder('users')
+      .leftJoinAndSelect('users.branch', 'branch')
+      .leftJoinAndSelect('users.department', 'department')
+      .where('users.role!=:role', { role: 'user' })
+      .andWhere('users.id=:id', { id: id })
+      .andWhere('users.deleted=:deleted', { deleted: false })
+      .getOne();
+  }
+  
   async findAllAdminLimit(skip: number, take: number) {
     return await this.repository
       .createQueryBuilder('users')

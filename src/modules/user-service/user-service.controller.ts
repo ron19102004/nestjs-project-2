@@ -20,7 +20,6 @@ import { Role } from '../user/interfaces/enum';
 import { UserService } from './entities/user-service.entity';
 import { ResponseCustomModule } from 'src/helpers/response.help';
 import { Admin } from '../user/entities/admin.entity';
-import { MyselfGuard } from 'src/guards/myself.guard';
 
 @Controller('users-services')
 @ApiTags('users-services')
@@ -59,11 +58,6 @@ export class UserServiceController {
     return data;
   }
   @Get('/admin_id=:id')
-  @UseGuards(MyselfGuard)
-  @Roles(Role.admin, Role.master)
-  @UseGuards(RolesGuard)
-  @UseGuards(AuthsGuard)
-  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   async getAllByAdId(@Param('id') id: number) {
     const uService: UserService[] =
@@ -106,13 +100,6 @@ export class UserServiceController {
       member_of_organization: user.member_of_organization,
       areas_of_expertise: user.areas_of_expertise,
     };
-  }
-  @Get('/admin/id')
-  @HttpCode(HttpStatus.OK)
-  async findByIdAdmin(@Param('id') id: number) {
-    const userService: UserService[] =
-      await this.userServiceService.findByIdAdmin(id);
-    return ResponseCustomModule.ok(userService, 'Truy xuất thành công');
   }
   @Get('/admin/:email')
   @HttpCode(HttpStatus.OK)
