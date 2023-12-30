@@ -52,6 +52,8 @@ export class Admin extends User {
   public bookingForUser: Booking[];
   @OneToMany(() => Feedback, (f: Feedback) => f.user)
   public feedBacks: Feedback[];
+  @OneToMany(() => Feedback, (f: Feedback) => f.user)
+  public feedBackBeReply: Feedback[];
   updateAdmin(
     branch: Branch,
     department: Department,

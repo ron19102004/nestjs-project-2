@@ -14,6 +14,7 @@ import { BookingAnalyticModule } from './analytics/booking-analytic/booking-anal
 import configs_custom from './configs/environment.config';
 import typeormModuleOptionsCustom from './configs/database.config';
 import { BookingModule } from './modules/booking/booking.module';
+import { StatusModule } from './modules/status/status.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -32,6 +33,7 @@ import { BookingModule } from './modules/booking/booking.module';
     UserServiceModule,
     BookingModule,
     BookingAnalyticModule,
+    StatusModule,
   ],
   controllers: [],
   providers: [],

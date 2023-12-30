@@ -12,6 +12,7 @@ import { Service } from './service/entities/service.entity';
 import { UserService as UserServiceEntity } from './user-service/entities/user-service.entity';
 import { Booking } from './booking/entities/booking.entity';
 import { Feedback } from './feedback/entities/feedback.entity';
+import { Status } from './status/entities/status.entity';
 export { BranchModule, DepartmentModule, UserModule };
 export {
   Branch,
@@ -23,4 +24,5 @@ export {
   UserServiceEntity,
   Booking,
   Feedback,
+  Status
 };

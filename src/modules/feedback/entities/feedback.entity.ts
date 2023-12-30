@@ -24,6 +24,14 @@ export class Feedback extends EntityBase {
     default: false
   })
   public confirmed: boolean
+  @Column({
+    name:'reply_id',
+    type:'int',
+    default: 0
+  })
+  public reply_id:number;
   @ManyToOne(() => Admin, (a: Admin) => a.feedBacks)
   public user: Admin;
+  @ManyToOne(() => Admin, (a: Admin) => a.feedBackBeReply)
+  public userBeReply: Admin;
 }
