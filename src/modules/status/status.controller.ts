@@ -16,9 +16,10 @@ import { Role } from '../user/interfaces/enum';
 import { Roles } from 'src/auths/decorators/role.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
 import { AuthsGuard } from 'src/auths/auths.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('status')
+@ApiTags('status')
 export class StatusController {
   constructor(private readonly statusService: StatusService) {}
   @Post('/')

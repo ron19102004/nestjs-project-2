@@ -17,6 +17,12 @@ export class Message extends EntityBase{
         nullable: false,
     })
     public content: string;
+    @Column({
+        name:'seen',
+        type:'boolean',
+        default: false,
+    })
+    public seen: boolean;
     @ManyToOne(()=>Admin,(a:Admin)=>a.messagesReceive)
     public user:Admin
     @ManyToOne(()=>Admin,(a:Admin)=>a.messagesSend)

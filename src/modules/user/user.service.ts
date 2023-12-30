@@ -24,6 +24,15 @@ export class UserService {
     @InjectRepository(Department) private repositoryDep: Repository<Department>,
     @InjectRepository(Branch) private repositoryBra: Repository<Branch>,
   ) {}
+  async findOneAdmin(){
+    return await this.repository
+    .createQueryBuilder('users')
+    .leftJoinAndSelect('users.branch', 'branch')
+    .leftJoinAndSelect('users.department', 'department')
+    .where('users.role!=:role', { role: 'user' })
+    .andWhere('users.deleted=:deleted', { deleted: false })
+    .getOne();
+  }
   async createUser(userDto: IUserDto<CreateUserDto>) {
     const userByEmail: Admin = await this.findByEmail(userDto.entity().email);
     if (userByEmail)

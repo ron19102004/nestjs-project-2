@@ -9,6 +9,8 @@ import { ResponseCustomModule } from 'src/helpers/response.help';
 import { AuthsPayloads } from 'src/auths/gateways/auths-payload.gateway';
 import { CreateReplyFeedbackDto } from './dto/create-reply-feedback';
 import { StatusService } from '../status/status.service';
+import { TelebotService } from '../telebot/telebot.service';
+import { Telebot } from '../telebot/entities/telebot.entity';
 
 @Injectable()
 export class FeedbackService {
@@ -16,6 +18,7 @@ export class FeedbackService {
     @InjectRepository(Feedback) private repository: Repository<Feedback>,
     private userService: UserService,
     private statusService: StatusService,
+    private teleService: TelebotService,
   ) {}
   async create(userId: number, createFeedbackDto: CreateFeedbackDto) {
     const user: Admin = await this.userService.findById(userId);
@@ -31,7 +34,14 @@ export class FeedbackService {
       feedback.confirmed = true;
       mess = 'Đã thêm feedback thành công';
     }
-    await this.repository.save(feedback);
+    const fb = await this.repository.save(feedback);
+    if (fb.confirmed) {
+      const admin = await this.userService.findOneAdmin();
+      const tele: Telebot = await this.teleService.findOneByAcronym('tks_use');
+      await this.createReply(admin.id, fb.id, user.id, {
+        content: tele?.content ?? 'Cảm ơn quý khách',
+      });
+    }
     return ResponseCustomModule.ok(null, mess);
   }
   async createReply(
@@ -50,6 +60,7 @@ export class FeedbackService {
         404,
       );
     const feedBack: Feedback = await this.repository.findOne({
+      relations: ['user'],
       where: { id: reply_id },
     });
     if (!feedBack)
@@ -65,6 +76,12 @@ export class FeedbackService {
     if (confirm_stt && confirm_stt.value === false) {
       feedBackReply.confirmed = true;
       mess = 'Đã thêm feedback thành công';
+      const owner =
+        feedBack?.user?.id === userBe_reply.id ? 'bạn' : feedBack.user.lastName;
+      this.teleService.sendMessageByPhonenumber(null, {
+        phoneNumber: userBe_reply.phoneNumber,
+        message: `${user.lastName} đã phản hồi bình luận của bạn ở phản hồi có tiêu đề: ${feedBack.subject} của ${owner}`,
+      });
     }
     await this.repository.save(feedBackReply);
     return ResponseCustomModule.ok(null, mess);
@@ -130,6 +147,7 @@ export class FeedbackService {
   }
   async confirm(idFb: number) {
     const fb = await this.repository.findOne({
+      relations: ['user', 'userBeReply'],
       where: {
         id: idFb,
         deleted: false,
@@ -139,6 +157,21 @@ export class FeedbackService {
     if (!fb) return;
     fb.confirmed = true;
     await this.repository.save(fb);
+    if (fb.reply_id != 0) {
+      const fbOrigin = await this.repository.findOne({
+        relations: ['user'],
+        where: {
+          reply_id: fb.reply_id,
+          deleted: false,
+        },
+      });
+      const owner =
+        fbOrigin?.user?.id === fb.userBeReply.id ? 'bạn' : fb.user.lastName;
+      this.teleService.sendMessageByPhonenumber(null, {
+        phoneNumber: fb.userBeReply.phoneNumber,
+        message: `${fb.user.lastName} đã phản hồi bình luận của bạn ở phản hồi có tiêu đề: ${fb.subject} của ${owner}`,
+      });
+    }
   }
   async delete(idFb: number) {
     const fb = await this.repository.findOne({
